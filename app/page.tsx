@@ -1,37 +1,9 @@
-//TODO: move to unauthenticated page, implement auth, add middleware
 "use client"
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
-import { useState } from "react"
+import { ArrowLeft } from "lucide-react"
+import SessionInfo from "./components/SessionInfo"
 
-export default function LandingPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
-
-  const handleSignIn = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setSuccess(false)
-    if (!email || !password) {
-      setError("Please fill in all fields")
-      return
-    }
-    if (!email.includes("@")) {
-      setError("Please enter a valid email")
-      return
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters")
-      return
-    }
-    setSuccess(true)
-    setTimeout(() => {
-      setSuccess(false)
-    }, 3000)
-  }
-
+export default function Main() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-white relative overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -39,64 +11,51 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 to-gray-800/90"></div>
       </div>
 
-      <div className="w-full max-w-md transform rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm transition-all relative z-10">
-        <div className="space-y-6">
-          <div className="space-y-2 text-center">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Welcome to Kin4ik</h1>
-            <p className="text-gray-400">Please sign in to continue</p>
+      <div className="w-full max-w-4xl transform rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm transition-all relative z-10">
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Welcome to Your Dashboard</h1>
+            <p className="text-gray-400">Your personalized movie recommendations will appear here</p>
           </div>
 
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-            <div className="space-y-2">
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            {error && (
-              <div className="text-red-400 text-sm text-center">{error}</div>
-            )}
-            
-            {success && (
-              <div className="text-green-400 text-sm text-center">Successfully signed in!</div>
-            )}
-
-            <button
-              type="submit"
-              className="group flex w-full items-center justify-center rounded-lg bg-purple-600 px-4 py-3 font-medium text-white transition-colors hover:bg-purple-500"
-            >
-              Sign In
-              <ArrowRight className="ml-2 h-4 w-4 opacity-70 transition-transform group-hover:translate-x-1" />
-            </button>
-          </form>
-
-          <div className="text-center">
-            <Link
-              href="/register"
-              className="text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              Don't have an account? Register here
-            </Link>
+          <div className="mb-6">
+            <SessionInfo />
           </div>
 
-          <div className="mt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Kin4ik. All rights reserved.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-gray-700/50 rounded-xl p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Recommended for You</h2>
+              <p className="text-gray-400">Based on your preferences, we'll recommend movies here</p>
+              <div className="bg-gray-600/50 h-40 rounded-lg flex items-center justify-center">
+                <p className="text-gray-400 italic">Your recommendations will appear here</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-700/50 rounded-xl p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Your Preferences</h2>
+              <p className="text-gray-400">Your movie preferences that you selected during registration</p>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Favorite Genre:</span>
+                  <span>Action</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Watching Frequency:</span>
+                  <span>Weekly</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Preferred Language:</span>
+                  <span>Original</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-4 border-t border-gray-700/50">
+            <p className="text-sm text-gray-500">© {new Date().getFullYear()} Kin4ik. All rights reserved.</p>
           </div>
         </div>
       </div>
     </div>
   )
-}
+} 

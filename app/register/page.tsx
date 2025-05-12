@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArrowRight, ArrowLeft } from "lucide-react"
 import { useState } from "react"
+import { registerUser } from "@/lib/actions/auth"
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1)
@@ -20,6 +21,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedActors, setSelectedActors] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const questions = [
     {
@@ -111,11 +113,43 @@ export default function RegisterPage() {
     }
   }
 
+  const validateStep1 = () => {
+    if (!formData.email || !formData.username || !formData.password) {
+      setError("Please fill in all fields")
+      return false
+    }
+    if (!formData.email.includes("@")) {
+      setError("Please enter a valid email")
+      return false
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters")
+      return false
+    }
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters")
+      return false
+    }
+    return true
+  }
+
+  const handleNext = () => {
+    setError("")
+    if (step === 1 && validateStep1()) {
+      setStep(2)
+    }
+  }
+
+  const handleBackS = () => {
+    setStep(1)
+    setError("")
+  }
+
   const handleNextQ = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1)
     } else {
-      setStep(3)
+      handleSubmitRegistration()
     }
   }
 
@@ -124,6 +158,39 @@ export default function RegisterPage() {
       setCurrentQuestion(prev => prev - 1)
     } else {
       setStep(1)
+    }
+  }
+
+  const handleSubmitRegistration = async () => {
+    try {
+      setIsSubmitting(true)
+      
+      const initialData = {
+        favoriteGenre: formData.favoriteGenre,
+        watchFrequency: formData.watchFrequency,
+        preferredLanguage: formData.preferredLanguage,
+        favoriteActors: formData.favoriteActors,
+        moviePreferences: formData.moviePreferences
+      }
+
+      const result = await registerUser({
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        initial: initialData
+      })
+
+      if (result.success) {
+        setStep(3)
+      } else {
+        setError(result.error || "Registration failed")
+        setStep(1) // Go back to the first step if there's an error
+      }
+    } catch (err) {
+      console.error("Registration error:", err)
+      setError("An unexpected error occurred")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -189,38 +256,6 @@ export default function RegisterPage() {
           </div>
         )
     }
-  }
-
-  const validateStep1 = () => {
-    if (!formData.email || !formData.username || !formData.password) {
-      setError("Please fill in all fields")
-      return false
-    }
-    if (!formData.email.includes("@")) {
-      setError("Please enter a valid email")
-      return false
-    }
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
-      return false
-    }
-    if (formData.username.length < 3) {
-      setError("Username must be at least 3 characters")
-      return false
-    }
-    return true
-  }
-
-  const handleNext = () => {
-    setError("")
-    if (step === 1 && validateStep1()) {
-      setStep(2)
-    }
-  }
-
-  const handleBack = () => {
-    setStep(1)
-    setError("")
   }
 
   return (
@@ -304,6 +339,7 @@ export default function RegisterPage() {
                 <button
                   onClick={handleBackQ}
                   className="flex items-center px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
+                  disabled={isSubmitting}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back
@@ -314,8 +350,9 @@ export default function RegisterPage() {
                 <button
                   onClick={handleNextQ}
                   className="flex items-center px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
+                  disabled={isSubmitting}
                 >
-                  {currentQuestion === questions.length - 1 ? "Finish" : "Next"}
+                  {currentQuestion === questions.length - 1 ? (isSubmitting ? "Submitting..." : "Finish") : "Next"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </button>
               </div>
