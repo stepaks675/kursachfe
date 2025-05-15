@@ -1,24 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kin4ik - Movie Recommendation Platform
+
+This is a Next.js application that provides personalized movie recommendations based on user preferences.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (v18 or later)
+- PostgreSQL database
+
+### Database Setup
+
+1. Create a PostgreSQL database named `kin4ik`
+2. The application will automatically create the required tables when first run
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```
+DATABASE_URL=postgres://username:password@localhost:5432/kin4ik
+```
+
+Replace `username` and `password` with your PostgreSQL credentials.
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- User registration with profile creation
+- Personalized movie recommendations
+- User preference survey for better recommendations
+- Responsive design
+
+## Tech Stack
+
+- Next.js 15
+- React 19
+- TypeScript
+- TailwindCSS
+- DrizzleORM
+- PostgreSQL
+
+## Project Structure
+
+- `app/` - App Router components and pages
+- `lib/` - Utility functions and database logic
+  - `db/` - Database schema and connection
+  - `actions/` - Server actions
+- `public/` - Static assets
 
 ## Learn More
 

@@ -13,7 +13,7 @@ export type RegisterData = {
     watchFrequency?: string;
     preferredLanguage?: string;
     favoriteActors?: string[];
-    moviePreferences?: string;
+    seriesPreferences?: string;
   };
 };
 

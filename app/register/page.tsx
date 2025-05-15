@@ -15,8 +15,7 @@ export default function RegisterPage() {
     watchFrequency: "",
     preferredLanguage: "",
     favoriteActors: [] as string[],
-    favoriteMovies: [] as string[],
-    moviePreferences: "",
+    seriesPreferences: "",
   })
   const [error, setError] = useState("")
   const [currentQuestion, setCurrentQuestion] = useState(0)
@@ -26,7 +25,7 @@ export default function RegisterPage() {
   const questions = [
     {
       type: "single",
-      question: "Какой жанр фильмов вы предпочитаете?",
+      question: "Какой жанр сериалов вы предпочитаете?",
       options: [
         { value: "action", label: "Боевики" },
         { value: "comedy", label: "Комедии" },
@@ -51,13 +50,13 @@ export default function RegisterPage() {
     },
     {
       type: "text",
-      question: "Расскажите о ваших предпочтениях в кино (любимые фильмы, что ищете в фильмах и т.д.):",
-      placeholder: "Например: люблю фильмы с неожиданным финалом, предпочитаю европейское кино...",
-      name: "moviePreferences"
+      question: "Расскажите о ваших предпочтениях в сериалах (любимые сериалы, что ищете в сериалах и т.д.):",
+      placeholder: "Например: люблю сериалы с неожиданным финалом, предпочитаю европейские сериалы...",
+      name: "seriesPreferences"
     },
     {
       type: "single",
-      question: "Как часто вы смотрите фильмы?",
+      question: "Как часто вы смотрите сериалы?",
       options: [
         { value: "daily", label: "Ежедневно" },
         { value: "weekly", label: "Раз в неделю" },
@@ -68,7 +67,7 @@ export default function RegisterPage() {
     },
     {
       type: "single",
-      question: "На каком языке вы предпочитаете смотреть фильмы?",
+      question: "На каком языке вы предпочитаете смотреть сериалы?",
       options: [
         { value: "russian", label: "Русский" },
         { value: "english", label: "Английский" },
@@ -108,7 +107,7 @@ export default function RegisterPage() {
     if (currentQ.type === "single") {
       setFormData(prev => ({
         ...prev,
-        [currentQ.name]: value
+        [currentQ.name as keyof typeof formData]: value
       }))
     }
   }
@@ -170,7 +169,7 @@ export default function RegisterPage() {
         watchFrequency: formData.watchFrequency,
         preferredLanguage: formData.preferredLanguage,
         favoriteActors: formData.favoriteActors,
-        moviePreferences: formData.moviePreferences
+        seriesPreferences: formData.seriesPreferences
       }
 
       const result = await registerUser({
@@ -247,9 +246,9 @@ export default function RegisterPage() {
         return (
           <div className="space-y-4">
             <textarea
-              value={formData.moviePreferences}
+              value={formData.seriesPreferences}
               onChange={handleInputChange}
-              name="moviePreferences"
+              name="seriesPreferences"
               placeholder={currentQ.placeholder}
               className="w-full h-32 px-4 py-3 rounded-lg bg-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
             />

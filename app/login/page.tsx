@@ -85,8 +85,8 @@ export default function LandingPage() {
       <div className="w-full max-w-md transform rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm transition-all relative z-10">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Welcome to Kin4ik</h1>
-            <p className="text-gray-400">Please sign in to continue</p>
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Добро пожаловать в Kin4ik</h1>
+            <p className="text-gray-400">Пожалуйста, войдите, чтобы продолжить</p>
           </div>
 
           <form onSubmit={handleSignIn} className="space-y-4">

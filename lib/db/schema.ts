@@ -10,6 +10,6 @@ export const kin4ikauth = pgTable('kin4ikauth', {
     watchFrequency?: string;
     preferredLanguage?: string;
     favoriteActors?: string[];
-    moviePreferences?: string;
+    seriesPreferences?: string;
   }>().default({})
 }); 

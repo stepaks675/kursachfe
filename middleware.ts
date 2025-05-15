@@ -16,5 +16,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/((?!login|register|movies-bg.jpg).*)"],
+  matcher: ["/profile"],
 }; 
