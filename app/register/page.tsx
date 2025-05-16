@@ -1,82 +1,100 @@
 //TODO: improve design, do right questions, add validation, add backend
 "use client"
 import Link from "next/link"
-import { ArrowRight, ArrowLeft } from "lucide-react"
-import { useState } from "react"
-import { registerUser } from "@/lib/actions/auth"
+import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { registerUser, checkEmailExists } from "@/lib/actions/auth"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     email: "",
     username: "",
     password: "",
-    favoriteGenre: "",
-    watchFrequency: "",
-    preferredLanguage: "",
-    favoriteActors: [] as string[],
-    seriesPreferences: "",
+    genres: [] as string[],
+    timePeriod: "",
+    episodeDuration: "",
   })
   const [error, setError] = useState("")
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [selectedActors, setSelectedActors] = useState<string[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false)
+  const [registrationComplete, setRegistrationComplete] = useState(false)
 
   const questions = [
     {
-      type: "single",
-      question: "Какой жанр сериалов вы предпочитаете?",
-      options: [
-        { value: "action", label: "Боевики" },
-        { value: "comedy", label: "Комедии" },
-        { value: "drama", label: "Драмы" },
-        { value: "horror", label: "Ужасы" },
-        { value: "sci-fi", label: "Фантастика" },
-      ],
-      name: "favoriteGenre"
-    },
-    {
       type: "multi",
-      question: "Выберите ваших любимых актеров (можно выбрать несколько):",
+      question: "Какие жанры сериалов вы предпочитаете?",
       options: [
-        { value: "tom_hanks", label: "Том Хэнкс" },
-        { value: "leonardo_dicaprio", label: "Леонардо Ди Каприо" },
-        { value: "meryl_streep", label: "Мерил Стрип" },
-        { value: "brad_pitt", label: "Брэд Питт" },
-        { value: "scarlett_johansson", label: "Скарлетт Йоханссон" },
-        { value: "ryan_gosling", label: "Райан Гослинг" },
+        { value: "documentation", label: "Документальные" },
+        { value: "comedy", label: "Комедии" },
+        { value: "european", label: "Европейские" },
+        { value: "animation", label: "Анимация" },
+        { value: "family", label: "Семейные" },
+        { value: "fantasy", label: "Фэнтези" },
+        { value: "music", label: "Музыкальные" },
+        { value: "drama", label: "Драмы" },
+        { value: "action", label: "Боевики" },
+        { value: "war", label: "Военные" },
+        { value: "crime", label: "Криминальные" },
+        { value: "scifi", label: "Научная фантастика" },
+        { value: "reality", label: "Реалити-шоу" },
+        { value: "western", label: "Вестерны" },
+        { value: "thriller", label: "Триллеры" },
+        { value: "romance", label: "Романтические" },
+        { value: "horror", label: "Ужасы" },
+        { value: "sport", label: "Спортивные" },
+        { value: "history", label: "Исторические" }
       ],
-      name: "favoriteActors"
-    },
-    {
-      type: "text",
-      question: "Расскажите о ваших предпочтениях в сериалах (любимые сериалы, что ищете в сериалах и т.д.):",
-      placeholder: "Например: люблю сериалы с неожиданным финалом, предпочитаю европейские сериалы...",
-      name: "seriesPreferences"
-    },
-    {
-      type: "single",
-      question: "Как часто вы смотрите сериалы?",
-      options: [
-        { value: "daily", label: "Ежедневно" },
-        { value: "weekly", label: "Раз в неделю" },
-        { value: "monthly", label: "Раз в месяц" },
-        { value: "rarely", label: "Редко" },
-      ],
-      name: "watchFrequency"
+      name: "genres",
+      required: true
     },
     {
       type: "single",
-      question: "На каком языке вы предпочитаете смотреть сериалы?",
+      question: "Какой временной период в мире сериалов вам наиболее интересен?",
       options: [
-        { value: "russian", label: "Русский" },
-        { value: "english", label: "Английский" },
-        { value: "original", label: "Оригинальный" },
-        { value: "any", label: "Любой" },
+        { value: "1920s", label: "1920-е" },
+        { value: "1930s", label: "1930-е" },
+        { value: "1940s", label: "1940-е" },
+        { value: "1950s", label: "1950-е" },
+        { value: "1960s", label: "1960-е" },
+        { value: "1970s", label: "1970-е" },
+        { value: "1980s", label: "1980-е" },
+        { value: "1990s", label: "1990-е" },
+        { value: "2000s", label: "2000-е" },
+        { value: "2010s", label: "2010-е" },
+        { value: "2020s", label: "2020-е" },
       ],
-      name: "preferredLanguage"
+      name: "timePeriod",
+      required: true
+    },
+    {
+      type: "single",
+      question: "Какова средняя продолжительность одной серии в ваших любимых сериалах? (в минутах)",
+      options: [
+        { value: "under60", label: "до 60" },
+        { value: "60to120", label: "60-120" },
+        { value: "120to180", label: "120-180" },
+        { value: "180to210", label: "180-210" },
+      ],
+      name: "episodeDuration",
+      required: true
     }
   ]
+
+  useEffect(() => {
+    // Redirect to login page after successful registration and a short delay
+    if (registrationComplete) {
+      const timer = setTimeout(() => {
+        router.push("/login");
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [registrationComplete, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -84,17 +102,22 @@ export default function RegisterPage() {
       ...prev,
       [name]: value
     }))
+    
+    // Clear error when user starts typing again
+    if (error) {
+      setError("")
+    }
   }
 
   const handleMultiSelect = (value: string) => {
-    setSelectedActors(prev => {
+    setSelectedGenres(prev => {
       const newSelection = prev.includes(value)
         ? prev.filter(v => v !== value)
         : [...prev, value]
       
       setFormData(prev => ({
         ...prev,
-        favoriteActors: newSelection
+        genres: newSelection
       }))
       
       return newSelection
@@ -114,41 +137,73 @@ export default function RegisterPage() {
 
   const validateStep1 = () => {
     if (!formData.email || !formData.username || !formData.password) {
-      setError("Please fill in all fields")
+      setError("Пожалуйста, заполните все поля")
       return false
     }
     if (!formData.email.includes("@")) {
-      setError("Please enter a valid email")
+      setError("Пожалуйста, введите корректный email")
       return false
     }
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
+      setError("Пароль должен содержать минимум 6 символов")
       return false
     }
     if (formData.username.length < 3) {
-      setError("Username must be at least 3 characters")
+      setError("Имя пользователя должно содержать минимум 3 символа")
       return false
     }
     return true
   }
 
-  const handleNext = () => {
-    setError("")
-    if (step === 1 && validateStep1()) {
-      setStep(2)
+  const validateCurrentQuestion = () => {
+    const currentQ = questions[currentQuestion]
+    
+    if (currentQ.required) {
+      if (currentQ.type === "multi" && formData.genres.length === 0) {
+        setError("Пожалуйста, выберите хотя бы один жанр")
+        return false
+      }
+      
+      if (currentQ.type === "single" && !formData[currentQ.name as keyof typeof formData]) {
+        setError("Пожалуйста, выберите один из вариантов")
+        return false
+      }
+    }
+    
+    return true
+  }
+
+  const checkEmail = async () => {
+    if (!formData.email.includes("@")) {
+      setError("Пожалуйста, введите корректный email")
+      return false
+    }
+    
+    setIsCheckingEmail(true)
+    try {
+      const result = await checkEmailExists(formData.email)
+      if (result.exists) {
+        setError("Этот email уже используется")
+        setIsCheckingEmail(false)
+        return false
+      }
+      setIsCheckingEmail(false)
+      return true
+    } catch (err) {
+      console.error("Error checking email:", err)
+      setError("Ошибка при проверке email")
+      setIsCheckingEmail(false)
+      return false
     }
   }
 
-  const handleBackS = () => {
-    setStep(1)
+  const handleNext = async () => {
     setError("")
-  }
-
-  const handleNextQ = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1)
-    } else {
-      handleSubmitRegistration()
+    if (step === 1 && validateStep1()) {
+      const emailAvailable = await checkEmail()
+      if (emailAvailable) {
+        setStep(2)
+      }
     }
   }
 
@@ -160,16 +215,28 @@ export default function RegisterPage() {
     }
   }
 
+  const handleNextQ = () => {
+    setError("")
+    
+    if (!validateCurrentQuestion()) {
+      return
+    }
+    
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(prev => prev + 1)
+    } else {
+      handleSubmitRegistration()
+    }
+  }
+
   const handleSubmitRegistration = async () => {
     try {
       setIsSubmitting(true)
       
       const initialData = {
-        favoriteGenre: formData.favoriteGenre,
-        watchFrequency: formData.watchFrequency,
-        preferredLanguage: formData.preferredLanguage,
-        favoriteActors: formData.favoriteActors,
-        seriesPreferences: formData.seriesPreferences
+        genres: formData.genres,
+        timePeriod: formData.timePeriod,
+        episodeDuration: formData.episodeDuration
       }
 
       const result = await registerUser({
@@ -181,14 +248,14 @@ export default function RegisterPage() {
 
       if (result.success) {
         setStep(3)
+        setRegistrationComplete(true)
       } else {
-        setError(result.error || "Registration failed")
-        setStep(1) // Go back to the first step if there's an error
+        setError(result.error || "Ошибка регистрации")
+        setIsSubmitting(false)
       }
     } catch (err) {
       console.error("Registration error:", err)
-      setError("An unexpected error occurred")
-    } finally {
+      setError("Произошла непредвиденная ошибка")
       setIsSubmitting(false)
     }
   }
@@ -200,19 +267,44 @@ export default function RegisterPage() {
 
     switch (currentQ.type) {
       case "single":
+        if (currentQ.name === "timePeriod") {
+          return (
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+              {currentQ.options?.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleQuestionAnswer(option.value)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
+                    formData.timePeriod === option.value
+                      ? "bg-purple-600/70 hover:bg-purple-600"
+                      : "bg-gray-600/50 hover:bg-gray-600"
+                  }`}
+                >
+                  <span>{option.label}</span>
+                  {formData.timePeriod === option.value && (
+                    <Check className="h-4 w-4" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )
+        }
         return (
           <div className="space-y-3">
             {currentQ.options?.map((option) => (
               <button
                 key={option.value}
                 onClick={() => handleQuestionAnswer(option.value)}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
                   formData[currentQ.name as keyof typeof formData] === option.value
-                    ? "bg-purple-600 hover:bg-purple-500"
+                    ? "bg-purple-600/70 hover:bg-purple-600"
                     : "bg-gray-600/50 hover:bg-gray-600"
                 }`}
               >
-                {option.label}
+                <span>{option.label}</span>
+                {formData[currentQ.name as keyof typeof formData] === option.value && (
+                  <Check className="h-4 w-4" />
+                )}
               </button>
             ))}
           </div>
@@ -220,38 +312,23 @@ export default function RegisterPage() {
 
       case "multi":
         return (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
             {currentQ.options?.map((option) => (
-              <label
+              <button
                 key={option.value}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                  selectedActors.includes(option.value)
-                    ? "bg-purple-600/50 hover:bg-purple-600"
+                onClick={() => handleMultiSelect(option.value)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
+                  selectedGenres.includes(option.value)
+                    ? "bg-purple-600/70 hover:bg-purple-600"
                     : "bg-gray-600/50 hover:bg-gray-600"
                 }`}
               >
-                <input
-                  type="checkbox"
-                  checked={selectedActors.includes(option.value)}
-                  onChange={() => handleMultiSelect(option.value)}
-                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                />
                 <span>{option.label}</span>
-              </label>
+                {selectedGenres.includes(option.value) && (
+                  <Check className="h-4 w-4" />
+                )}
+              </button>
             ))}
-          </div>
-        )
-
-      case "text":
-        return (
-          <div className="space-y-4">
-            <textarea
-              value={formData.seriesPreferences}
-              onChange={handleInputChange}
-              name="seriesPreferences"
-              placeholder={currentQ.placeholder}
-              className="w-full h-32 px-4 py-3 rounded-lg bg-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-            />
           </div>
         )
     }
@@ -264,12 +341,35 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 to-gray-800/90"></div>
       </div>
 
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(75, 85, 99, 0.2);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 246, 0.5);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 92, 246, 0.7);
+        }
+      `}</style>
+
       <div className="w-full max-w-md transform rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm transition-all relative z-10">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Create Account</h1>
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">
+              {step === 3 ? "Успех!" : "Создание аккаунта"}
+            </h1>
             <p className="text-gray-400">
-              {step === 1 ? "Fill in your details" : "Tell us about your preferences"}
+              {step === 1 
+                ? "Заполните ваши данные" 
+                : step === 2 
+                  ? "Расскажите о ваших предпочтениях"
+                  : "Регистрация завершена успешно"}
             </p>
           </div>
 
@@ -283,26 +383,29 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={isCheckingEmail}
                 />
               </div>
               <div className="space-y-2">
                 <input
                   type="text"
                   name="username"
-                  placeholder="Username"
+                  placeholder="Имя пользователя"
                   value={formData.username}
                   onChange={handleInputChange}
                   className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={isCheckingEmail}
                 />
               </div>
               <div className="space-y-2">
                 <input
                   type="password"
                   name="password"
-                  placeholder="Password"
+                  placeholder="Пароль"
                   value={formData.password}
                   onChange={handleInputChange}
                   className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={isCheckingEmail}
                 />
               </div>
 
@@ -312,10 +415,20 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                className="group flex w-full items-center justify-center rounded-lg bg-purple-600 px-4 py-3 font-medium text-white transition-colors hover:bg-purple-500"
+                className="group flex w-full items-center justify-center rounded-lg bg-purple-600 px-4 py-3 font-medium text-white transition-colors hover:bg-purple-500 disabled:opacity-70"
+                disabled={isCheckingEmail}
               >
-                Next
-                <ArrowRight className="ml-2 h-4 w-4 opacity-70 transition-transform group-hover:translate-x-1" />
+                {isCheckingEmail ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Проверка...
+                  </>
+                ) : (
+                  <>
+                    Далее
+                    <ArrowRight className="ml-2 h-4 w-4 opacity-70 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
               </button>
             </form>
           ) : step === 2 ? (
@@ -332,6 +445,16 @@ export default function RegisterPage() {
                   {questions[currentQuestion].question}
                 </h3>
                 {renderQuestion()}
+                
+                {error && (
+                  <div className="text-red-400 text-sm text-center mt-3">{error}</div>
+                )}
+                
+                {currentQuestion === 0 && (
+                  <div className="text-sm text-gray-300 mt-2 h-5">
+                    {formData.genres.length > 0 && `Выбрано жанров: ${formData.genres.length}`}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-between items-center">
@@ -341,30 +464,45 @@ export default function RegisterPage() {
                   disabled={isSubmitting}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
+                  Назад
                 </button>
                 <span className="text-sm text-gray-400">
-                  Question {currentQuestion + 1} of {questions.length}
+                  Вопрос {currentQuestion + 1} из {questions.length}
                 </span>
                 <button
                   onClick={handleNextQ}
                   className="flex items-center px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
                   disabled={isSubmitting}
                 >
-                  {currentQuestion === questions.length - 1 ? (isSubmitting ? "Submitting..." : "Finish") : "Next"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {currentQuestion === questions.length - 1 ? 
+                    (isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Отправка...
+                      </>
+                    ) : "Завершить") 
+                    : "Далее"}
+                  {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
                 </button>
               </div>
             </div>
           ) : (
             <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold">Registration Complete!</h2>
-              <p className="text-gray-400">Thank you for completing the registration process.</p>
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
+                  <Check className="h-10 w-10" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold">Регистрация завершена!</h2>
+              <p className="text-gray-400">Спасибо за регистрацию. Сейчас вы будете перенаправлены на страницу входа.</p>
+              <div className="flex justify-center mt-2">
+                <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
+              </div>
               <Link
-                href="/"
+                href="/login"
                 className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-3 font-medium text-white transition-colors hover:bg-purple-500"
               >
-                Go to Home
+                Перейти к входу
                 <ArrowRight className="ml-2 h-4 w-4 opacity-70" />
               </Link>
             </div>
@@ -373,16 +511,16 @@ export default function RegisterPage() {
           {step === 1 && (
             <div className="text-center">
               <Link
-                href="/"
+                href="/login"
                 className="text-sm text-gray-400 hover:text-white transition-colors"
               >
-                Already have an account? Sign in here
+                Уже есть аккаунт? Войдите здесь
               </Link>
             </div>
           )}
 
           <div className="mt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Kin4ik. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Kin4ik. Все права защищены.</p>
           </div>
         </div>
       </div>

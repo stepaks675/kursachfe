@@ -6,10 +6,8 @@ export const kin4ikauth = pgTable('kin4ikauth', {
   username: text('username').notNull(),
   password: text('password').notNull(),
   initial: json('initial').$type<{
-    favoriteGenre?: string;
-    watchFrequency?: string;
-    preferredLanguage?: string;
-    favoriteActors?: string[];
-    seriesPreferences?: string;
+    genres?: string[];
+    timePeriod?: string;
+    episodeDuration?: string;
   }>().default({})
 }); 

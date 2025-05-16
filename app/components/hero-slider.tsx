@@ -16,7 +16,6 @@ const featuredMovies = [
     banner: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
     rating: 8.6,
     year: 2024,
-
     genres: ["Фантастика", "Приключения", "Драма"],
   },
   {

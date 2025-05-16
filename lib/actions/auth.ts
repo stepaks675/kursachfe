@@ -3,29 +3,46 @@
 import { db } from '@/lib/db';
 import { kin4ikauth } from '@/lib/db/schema';
 import bcrypt from 'bcrypt';
+import { eq, or } from 'drizzle-orm';
 
 export type RegisterData = {
   email: string;
   username: string;
   password: string;
   initial: {
-    favoriteGenre?: string;
-    watchFrequency?: string;
-    preferredLanguage?: string;
-    favoriteActors?: string[];
-    seriesPreferences?: string;
+    genres?: string[];
+    timePeriod?: string;
+    episodeDuration?: string;
   };
 };
 
 export type LoginData = {
-  email: string;
+  email?: string;
+  username?: string;
   password: string;
 };
+
+export async function checkEmailExists(email: string) {
+  try {
+    if (!email) {
+      return { exists: false };
+    }
+
+    const existingUser = await db.query.kin4ikauth.findFirst({
+      where: (user, { eq }) => eq(user.email, email),
+    });
+
+    return { exists: !!existingUser };
+  } catch (error) {
+    console.error('Error checking email:', error);
+    return { exists: false, error: 'Failed to check email' };
+  }
+}
 
 export async function registerUser(data: RegisterData) {
   try {
     if (!data.email || !data.username || !data.password) {
-      return { success: false, error: 'All fields are required' };
+      return { success: false, error: 'Все поля обязательны для заполнения' };
     }
 
     const existingUser = await db.query.kin4ikauth.findFirst({
@@ -33,7 +50,7 @@ export async function registerUser(data: RegisterData) {
     });
 
     if (existingUser) {
-      return { success: false, error: 'Email already in use' };
+      return { success: false, error: 'Этот email уже используется' };
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -53,28 +70,36 @@ export async function registerUser(data: RegisterData) {
     };
   } catch (error) {
     console.error('Error registering user:', error);
-    return { success: false, error: 'Failed to register user' };
+    return { success: false, error: 'Не удалось зарегистрировать пользователя' };
   }
 }
 
 export async function loginUser(data: LoginData) {
   try {
-    if (!data.email || !data.password) {
-      return { success: false, error: 'Email and password are required' };
+    if ((!data.email && !data.username) || !data.password) {
+      return { success: false, error: 'Логин и пароль обязательны' };
     }
 
-    const user = await db.query.kin4ikauth.findFirst({
-      where: (u, { eq }) => eq(u.email, data.email),
-    });
+    let user;
+    
+    if (data.email) {
+      user = await db.query.kin4ikauth.findFirst({
+        where: (u, { eq }) => eq(u.email, data.email),
+      });
+    } else if (data.username) {
+      user = await db.query.kin4ikauth.findFirst({
+        where: (u, { eq }) => eq(u.username, data.username),
+      });
+    }
 
     if (!user) {
-      return { success: false, error: 'Invalid email or password' };
+      return { success: false, error: 'Неверный логин или пароль' };
     }
 
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
     if (!isPasswordValid) {
-      return { success: false, error: 'Invalid email or password' };
+      return { success: false, error: 'Неверный логин или пароль' };
     }
 
     return {
@@ -87,6 +112,6 @@ export async function loginUser(data: LoginData) {
     };
   } catch (error) {
     console.error('Error logging in:', error);
-    return { success: false, error: 'Failed to login' };
+    return { success: false, error: 'Не удалось войти в систему' };
   }
 } 

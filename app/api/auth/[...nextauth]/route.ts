@@ -9,18 +9,22 @@ export const authOptions: AuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        loginIdentifier: { label: "Имя пользователя или Email", type: "text" },
+        password: { label: "Пароль", type: "password" }
       },
       
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.loginIdentifier || !credentials?.password) {
           return null;
         }
 
         try {
+          // Determine if input is email or username
+          const isEmail = credentials.loginIdentifier.includes('@');
+          
           const result = await loginUser({
-            email: credentials.email,
+            email: isEmail ? credentials.loginIdentifier : undefined,
+            username: !isEmail ? credentials.loginIdentifier : undefined,
             password: credentials.password
           });
 
@@ -40,8 +44,8 @@ export const authOptions: AuthOptions = {
     })
   ],
   pages: {
-    signIn: "/",
-    error: "/"
+    signIn: "/login",
+    error: "/login"
   },
   callbacks: {
     async jwt({ token, user }: { token: JWT; user?: User }) {
