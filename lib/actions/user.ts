@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { kin4ikauth } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth/options';
 
 export type UserPreferences = {
   genres?: string[];
