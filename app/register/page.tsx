@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { registerUser, checkEmailExists } from "@/lib/actions/auth"
+import { registerUser, checkEmailExists, checkUsernameExists } from "@/lib/actions/auth"
 import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
@@ -22,6 +22,7 @@ export default function RegisterPage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingEmail, setIsCheckingEmail] = useState(false)
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   const [registrationComplete, setRegistrationComplete] = useState(false)
 
   const questions = [
@@ -197,11 +198,38 @@ export default function RegisterPage() {
     }
   }
 
+  const checkUsername = async () => {
+    if (formData.username.length < 3) {
+      setError("Имя пользователя должно содержать минимум 3 символа")
+      return false
+    }
+    
+    setIsCheckingUsername(true)
+    try {
+      const result = await checkUsernameExists(formData.username)
+      if (result.exists) {
+        setError("Это имя пользователя уже занято")
+        setIsCheckingUsername(false)
+        return false
+      }
+      setIsCheckingUsername(false)
+      return true
+    } catch (err) {
+      console.error("Error checking username:", err)
+      setError("Ошибка при проверке имени пользователя")
+      setIsCheckingUsername(false)
+      return false
+    }
+  }
+
   const handleNext = async () => {
     setError("")
     if (step === 1 && validateStep1()) {
       const emailAvailable = await checkEmail()
-      if (emailAvailable) {
+      if (!emailAvailable) return;
+      
+      const usernameAvailable = await checkUsername()
+      if (usernameAvailable) {
         setStep(2)
       }
     }
@@ -383,7 +411,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={isCheckingEmail}
+                  disabled={isCheckingEmail || isCheckingUsername}
                 />
               </div>
               <div className="space-y-2">
@@ -394,7 +422,7 @@ export default function RegisterPage() {
                   value={formData.username}
                   onChange={handleInputChange}
                   className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={isCheckingEmail}
+                  disabled={isCheckingEmail || isCheckingUsername}
                 />
               </div>
               <div className="space-y-2">
@@ -405,7 +433,7 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={handleInputChange}
                   className="w-full rounded-lg bg-gray-700/50 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={isCheckingEmail}
+                  disabled={isCheckingEmail || isCheckingUsername}
                 />
               </div>
 
@@ -416,9 +444,9 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 className="group flex w-full items-center justify-center rounded-lg bg-purple-600 px-4 py-3 font-medium text-white transition-colors hover:bg-purple-500 disabled:opacity-70"
-                disabled={isCheckingEmail}
+                disabled={isCheckingEmail || isCheckingUsername}
               >
-                {isCheckingEmail ? (
+                {isCheckingEmail || isCheckingUsername ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Проверка...

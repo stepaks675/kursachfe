@@ -19,7 +19,6 @@ export const authOptions: AuthOptions = {
         }
 
         try {
-          // Determine if input is email or username
           const isEmail = credentials.loginIdentifier.includes('@');
           
           const result = await loginUser({
@@ -67,7 +66,7 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt" as const,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60, 
   },
   secret: process.env.NEXTAUTH_SECRET || "your-secret-key-change-in-production",
 };

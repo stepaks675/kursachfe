@@ -39,18 +39,43 @@ export async function checkEmailExists(email: string) {
   }
 }
 
+export async function checkUsernameExists(username: string) {
+  try {
+    if (!username) {
+      return { exists: false };
+    }
+
+    const existingUser = await db.query.kin4ikauth.findFirst({
+      where: (user, { eq }) => eq(user.username, username),
+    });
+
+    return { exists: !!existingUser };
+  } catch (error) {
+    console.error('Error checking username:', error);
+    return { exists: false, error: 'Failed to check username' };
+  }
+}
+
 export async function registerUser(data: RegisterData) {
   try {
     if (!data.email || !data.username || !data.password) {
       return { success: false, error: 'Все поля обязательны для заполнения' };
     }
 
-    const existingUser = await db.query.kin4ikauth.findFirst({
+    const existingEmail = await db.query.kin4ikauth.findFirst({
       where: (user, { eq }) => eq(user.email, data.email),
     });
 
-    if (existingUser) {
+    if (existingEmail) {
       return { success: false, error: 'Этот email уже используется' };
+    }
+
+    const existingUsername = await db.query.kin4ikauth.findFirst({
+      where: (user, { eq }) => eq(user.username, data.username),
+    });
+
+    if (existingUsername) {
+      return { success: false, error: 'Это имя пользователя уже занято' };
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -84,11 +109,11 @@ export async function loginUser(data: LoginData) {
     
     if (data.email) {
       user = await db.query.kin4ikauth.findFirst({
-        where: (u, { eq }) => eq(u.email, data.email),
+        where: (u) => eq(u.email, data.email!),
       });
     } else if (data.username) {
       user = await db.query.kin4ikauth.findFirst({
-        where: (u, { eq }) => eq(u.username, data.username),
+        where: (u) => eq(u.username, data.username!),
       });
     }
 

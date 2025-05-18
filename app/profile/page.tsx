@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Edit2, Film, Clock, ChevronLeft, ChevronRight } from "lucide-react"
+import { User, Film, Clock, ChevronLeft, ChevronRight } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
@@ -10,8 +10,6 @@ import { getUserPreferences, UserPreferences } from "@/lib/actions/user"
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
-  const [isEditing, setIsEditing] = useState(false)
-  const [username, setUsername] = useState("")
   const [currentPage, setCurrentPage] = useState(0)
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -25,7 +23,49 @@ export default function ProfilePage() {
     { id: 5, title: "Матрица", date: "05.05.2023", posterUrl: "/matrix.jpg" },
   ]
   
-  // Load user preferences from the server
+  const genreLabels: Record<string, string> = {
+    documentation: "Документальные",
+    comedy: "Комедии",
+    european: "Европейские",
+    animation: "Анимация",
+    family: "Семейные",
+    fantasy: "Фэнтези",
+    music: "Музыкальные",
+    drama: "Драмы",
+    action: "Боевики",
+    war: "Военные",
+    crime: "Криминальные",
+    scifi: "Научная фантастика",
+    reality: "Реалити-шоу",
+    western: "Вестерны",
+    thriller: "Триллеры",
+    romance: "Романтические",
+    horror: "Ужасы",
+    sport: "Спортивные",
+    history: "Исторические"
+  }
+
+  const timePeriodLabels: Record<string, string> = {
+    "1920s": "1920-е",
+    "1930s": "1930-е",
+    "1940s": "1940-е",
+    "1950s": "1950-е",
+    "1960s": "1960-е",
+    "1970s": "1970-е",
+    "1980s": "1980-е",
+    "1990s": "1990-е",
+    "2000s": "2000-е",
+    "2010s": "2010-е",
+    "2020s": "2020-е"
+  }
+
+  const durationLabels: Record<string, string> = {
+    "under60": "до 60 минут",
+    "60to120": "60-120 минут",
+    "120to180": "120-180 минут",
+    "180to210": "180-210 минут"
+  }
+  
   useEffect(() => {
     async function loadUserPreferences() {
       try {
@@ -50,11 +90,22 @@ export default function ProfilePage() {
     }
   }, [status])
 
-  // Transform user preferences into questions and answers format
   const userQuestions = userPrefs ? [
-    { id: 1, question: "Ваш любимый жанр фильмов?", answer: userPrefs.genres?.join(", ") || "Не указано" },
-    { id: 2, question: "Предпочитаемый год выпуска?", answer: userPrefs.timePeriod || "Не указано" },
-    { id: 3, question: "Продолжительность серии?", answer: userPrefs.episodeDuration || "Не указано" },
+    { 
+      id: 1, 
+      question: "Ваш любимый жанр фильмов?", 
+      answer: userPrefs.genres?.map(genre => genreLabels[genre] || genre).join(", ") || "Не указано" 
+    },
+    { 
+      id: 2, 
+      question: "Предпочитаемый год выпуска?", 
+      answer: timePeriodLabels[userPrefs.timePeriod || ""] || userPrefs.timePeriod || "Не указано" 
+    },
+    { 
+      id: 3, 
+      question: "Продолжительность серии?", 
+      answer: durationLabels[userPrefs.episodeDuration || ""] || userPrefs.episodeDuration || "Не указано" 
+    },
   ] : []
 
   if (status === "unauthenticated") {
@@ -111,41 +162,16 @@ export default function ProfilePage() {
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
                       <label className="block text-sm font-medium text-gray-400">Имя пользователя</label>
-                      <button 
-                        onClick={() => setIsEditing(!isEditing)} 
-                        className="text-purple-400 hover:text-purple-300 transition-colors"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
                     </div>
                     
-                    {isEditing ? (
-                      <div className="mt-1 flex rounded-md shadow-sm">
-                        <input
-                          type="text"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          className="block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm text-white px-3 py-2"
-                          placeholder={session?.user?.name || "Введите имя пользователя"}
-                        />
-                        <button
-                          onClick={() => setIsEditing(false)}
-                          className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                        >
-                          Сохранить
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 px-3 py-2">
-                        {session?.user?.name || username || "Не указано"}
-                      </div>
-                    )}
+                    <div className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 px-3 py-2">
+                      {session?.user?.name || "Не указано"}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Registration Questions */}
             <div className="bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden mb-6">
               <div className="p-6">
                 <div className="flex items-center space-x-3 mb-4">

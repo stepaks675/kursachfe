@@ -2,84 +2,25 @@
 
 import { useState } from "react"
 import { Search, X } from "lucide-react"
-import MovieCard from "./movie-card"
 
-// Моковые данные для сериалов для поиска
 const allMovies = [
   {
     id: 201,
     title: "Крестный отец",
-    image: "/placeholder.svg?height=600&width=400",
+    image: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
     year: 1972,
     rating: 9.2,
     genres: ["Криминал", "Драма"],
   },
-  {
-    id: 202,
-    title: "Криминальное чтиво",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1994,
-    rating: 8.9,
-    genres: ["Криминал", "Драма"],
-  },
-  {
-    id: 203,
-    title: "Бойцовский клуб",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1999,
-    rating: 8.8,
-    genres: ["Драма"],
-  },
-  {
-    id: 204,
-    title: "Матрица",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1999,
-    rating: 8.7,
-    genres: ["Боевик", "Фантастика"],
-  },
-  {
-    id: 205,
-    title: "Славные парни",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1990,
-    rating: 8.7,
-    genres: ["Биография", "Криминал", "Драма"],
-  },
 ]
 
-// Моковые данные для похожих сериалов
 const similarMoviesResults = [
   {
     id: 301,
     title: "Казино",
-    image: "/placeholder.svg?height=600&width=400",
+    image: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
     year: 1995,
     rating: 8.2,
-    genres: ["Криминал", "Драма"],
-  },
-  {
-    id: 302,
-    title: "Схватка",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1995,
-    rating: 8.3,
-    genres: ["Криминал", "Драма", "Триллер"],
-  },
-  {
-    id: 303,
-    title: "Отступники",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 2006,
-    rating: 8.5,
-    genres: ["Криминал", "Драма", "Триллер"],
-  },
-  {
-    id: 304,
-    title: "Лицо со шрамом",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1983,
-    rating: 8.3,
     genres: ["Криминал", "Драма"],
   },
 ]
@@ -100,8 +41,7 @@ export default function SimilarMovies() {
   }
 
   const handleFindSimilar = () => {
-    // In a real app, we would call an API with the selected movie ID
-    setSimilarMovies(similarMoviesResults)
+    setSimilarMovies(similarMoviesResults.length > 0 ? [similarMoviesResults[0]] : [])
     setShowResults(true)
   }
 
@@ -112,6 +52,7 @@ export default function SimilarMovies() {
   }
 
   return (
+    <>
     <div className="transform rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm transition-all h-full">
       <div className="flex items-center space-x-3 mb-6">
         <Search className="h-8 w-8 text-purple-500" />
@@ -174,18 +115,70 @@ export default function SimilarMovies() {
       >
         Найти похожие сериалы
       </button>
+</div>
+      {similarMovies && showResults && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="w-full max-w-xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <button
+              onClick={() => setShowResults(false)}
+              className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-700 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
 
-      {showResults && (
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Похожие на {selectedMovie?.title} сериалы</h3>
+            {similarMovies.length > 0 ? (
+              <>
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold mb-2">Идеальный выбор для вас</h3>
+                  <p className="text-gray-400">Основываясь на ваших предпочтениях, мы рекомендуем:</p>
+                </div>
+                
+                <div className="flex flex-col">
+                  <h2 className="text-2xl font-bold mb-2">{similarMovies[0].title}</h2>
+                  
+                  <div className="relative w-full mb-4 rounded-lg overflow-hidden">
+                    <img 
+                      src={similarMovies[0].image} 
+                      alt={similarMovies[0].title}
+                      className="w-full h-auto object-cover"
+                    />
+                    <div className="absolute top-2 right-2 bg-black/70 text-yellow-400 font-bold px-2 py-1 rounded text-sm">
+                      ★ {similarMovies[0].rating}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {similarMovies[0].genres.map((genre: string, index: number) => (
+                      <span key={index} className="bg-purple-600/30 text-purple-200 px-3 py-1 rounded-full text-sm">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center text-gray-400 mb-6">
+                    <span className="mr-4">Год: {similarMovies[0].year}</span>
+                    <span>ID: {similarMovies[0].id}</span>
+                  </div>
+                  
+                  <p className="text-gray-300 mb-6">
+                    Этот захватывающий сериал отлично соответствует вашим предпочтениям. 
+                    Насладитесь просмотром качественного кино, которое мы специально подобрали для вас.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-400">К сожалению, мы не смогли найти подходящих рекомендаций. Пожалуйста, попробуйте другие варианты.</p>
+            )}
 
-          <div className="grid grid-cols-2 gap-4">
-            {similarMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
-            ))}
+            <button
+              onClick={handleClearSelection}
+              className="mt-2 w-full flex items-center justify-center rounded-lg border border-purple-500 px-4 py-3 font-medium text-purple-400 transition-colors hover:bg-purple-500/10"
+            >
+              Закрыть
+            </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

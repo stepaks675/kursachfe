@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight, Star, Clock, Play } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star, Play } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
-// Моковые данные для избранных сериалов
 const featuredMovies = [
   {
     id: 1,
@@ -24,7 +23,7 @@ const featuredMovies = [
     description:
       "История американского учёного Роберта Оппенгеймера и его роли в создании атомной бомбы.",
     image: "/placeholder.svg?height=1080&width=1920",
-    banner: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
+    banner: "https://gamemag.ru/images/imagemanager/cache/14/12aa/1412aa_uhdpaper.com-download-pc-2k-wallpaper-59-0-f.jpg",
     rating: 8.4,
     year: 2023,
 
@@ -48,7 +47,7 @@ const featuredMovies = [
     description:
       "Пожилая китаянка оказывается втянута в безумное приключение, где только она может спасти мир, исследуя другие вселенные.",
     image: "/placeholder.svg?height=1080&width=1920",
-    banner: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
+    banner: "https://gamemag.ru/images/imagemanager/cache/14/12aa/1412aa_uhdpaper.com-download-pc-2k-wallpaper-59-0-f.jpg",
     rating: 7.9,
     year: 2022,
 

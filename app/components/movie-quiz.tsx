@@ -1,87 +1,116 @@
 "use client"
 
 import { useState, type Dispatch, type SetStateAction } from "react"
-import { X, Brain, ArrowRight } from "lucide-react"
-import MovieCard from "./movie-card"
+import { X, Brain, ArrowRight, ArrowLeft, Search } from "lucide-react"
 
-// Моковые данные для рекомендованных сериалов после опроса
 const recommendedMovies = [
   {
     id: 101,
     title: "Начало",
-    image: "/placeholder.svg?height=600&width=400",
+    image: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
     year: 2010,
     rating: 8.8,
     genres: ["Фантастика", "Боевик", "Триллер"],
-  },
-  {
-    id: 102,
-    title: "Побег из Шоушенка",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 1994,
-    rating: 9.3,
-    genres: ["Драма"],
-  },
-  {
-    id: 103,
-    title: "Паразиты",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 2019,
-    rating: 8.5,
-    genres: ["Триллер", "Драма", "Комедия"],
-  },
-  {
-    id: 104,
-    title: "Тёмный рыцарь",
-    image: "/placeholder.svg?height=600&width=400",
-    year: 2008,
-    rating: 9.0,
-    genres: ["Боевик", "Криминал", "Драма"],
-  },
+  }
 ]
 
-// Вопросы опроса
 const surveyQuestions = [
   {
-    id: "genre",
-    question: "Какой жанр сериалов вы хотите посмотреть?",
+    id: "country",
+    question: "Какая из стран-производителей сериалов занимает особое место в Вашем сердце?",
     options: [
-      { value: "action", label: "Боевик" },
-      { value: "comedy", label: "Комедия" },
-      { value: "drama", label: "Драма" },
-      { value: "horror", label: "Ужасы" },
-      { value: "sci-fi", label: "Фантастика" },
-      { value: "thriller", label: "Триллер" },
+      { value: "AE", label: "Объединённые Арабские Эмираты" },
+      { value: "AR", label: "Аргентина" },
+      { value: "AT", label: "Австрия" },
+      { value: "AU", label: "Австралия" },
+      { value: "BE", label: "Бельгия" },
+      { value: "BR", label: "Бразилия" },
+      { value: "BY", label: "Беларусь" },
+      { value: "CA", label: "Канада" },
+      { value: "CH", label: "Швейцария" },
+      { value: "CL", label: "Чили" },
+      { value: "CN", label: "Китай" },
+      { value: "CO", label: "Колумбия" },
+      { value: "CZ", label: "Чехия" },
+      { value: "DE", label: "Германия" },
+      { value: "DK", label: "Дания" },
+      { value: "EG", label: "Египет" },
+      { value: "ES", label: "Испания" },
+      { value: "FI", label: "Финляндия" },
+      { value: "FR", label: "Франция" },
+      { value: "GB", label: "Великобритания" },
+      { value: "GT", label: "Гватемала" },
+      { value: "HK", label: "Гонконг" },
+      { value: "HU", label: "Венгрия" },
+      { value: "ID", label: "Индонезия" },
+      { value: "IE", label: "Ирландия" },
+      { value: "IL", label: "Израиль" },
+      { value: "IN", label: "Индия" },
+      { value: "IO", label: "Британская Территория в Индийском Океане" },
+      { value: "IS", label: "Исландия" },
+      { value: "IT", label: "Италия" },
+      { value: "JO", label: "Иордания" },
+      { value: "JP", label: "Япония" },
+      { value: "KE", label: "Кения" },
+      { value: "KN", label: "Сент-Китс и Невис" },
+      { value: "KR", label: "Республика Корея" },
+      { value: "KW", label: "Кувейт" },
+      { value: "LB", label: "Ливан" },
+      { value: "LU", label: "Люксембург" },
+      { value: "MA", label: "Марокко" },
+      { value: "MX", label: "Мексика" },
+      { value: "MY", label: "Малайзия" },
+      { value: "NC", label: "Новая Каледония" },
+      { value: "NG", label: "Нигерия" },
+      { value: "NL", label: "Нидерланды" },
+      { value: "NO", label: "Норвегия" },
+      { value: "NZ", label: "Новая Зеландия" },
+      { value: "PE", label: "Перу" },
+      { value: "PH", label: "Филиппины" },
+      { value: "PL", label: "Польша" },
+      { value: "PR", label: "Пуэрто-Рико" },
+      { value: "PT", label: "Португалия" },
+      { value: "RO", label: "Румыния" },
+      { value: "RU", label: "Россия" },
+      { value: "SA", label: "Саудовская Аравия" },
+      { value: "SE", label: "Швеция" },
+      { value: "SG", label: "Сингапур" },
+      { value: "SN", label: "Сенегал" },
+      { value: "SY", label: "Сирия" },
+      { value: "TH", label: "Таиланд" },
+      { value: "TN", label: "Тунис" },
+      { value: "TR", label: "Турция" },
+      { value: "TW", label: "Китайская Республика" },
+      { value: "UA", label: "Украина" },
+      { value: "US", label: "Соединённые Штаты Америки" },
+      { value: "UY", label: "Уругвай" },
+      { value: "VN", label: "Вьетнам" },
+      { value: "ZA", label: "Южно-Африканская Республика" },
+      { value: "ZM", label: "Замбия" },
     ],
   },
   {
     id: "mood",
-    question: "Какое у вас сегодня настроение?",
+    question: "Сериал с каким настроением сейчас Вам по душе?",
     options: [
-      { value: "happy", label: "Весёлое" },
-      { value: "sad", label: "Грустное" },
-      { value: "excited", label: "Взволнованное" },
-      { value: "relaxed", label: "Расслабленное" },
-      { value: "thoughtful", label: "Задумчивое" },
+      { value: "happy", label: "😊 веселое" },
+      { value: "sad", label: "😢 грустное" },
+      { value: "melancholic", label: "😔 меланхоличное" },
+      { value: "positive", label: "🌞 позитивное" },
+      { value: "touching", label: "💖 трогательное" },
+      { value: "joyful", label: "🎉 радостное" },
+      { value: "relaxing", label: "😌 расслабляющее" },
+      { value: "exciting", label: "🤩 захватывающее" },
     ],
   },
   {
-    id: "length",
-    question: "Сколько у вас времени на просмотр?",
+    id: "company",
+    question: "С какой компанией Вы хотите посмотреть сейчас сериал?",
     options: [
-      { value: "short", label: "< 30 минут" },
-      { value: "medium", label: "30-60 минут" },
-      { value: "long", label: "> 60 минут" },
-    ],
-  },
-  {
-    id: "era",
-    question: "Вы предпочитаете новые или старые сериалы?",
-    options: [
-      { value: "classic", label: "Классика (до 2000)" },
-      { value: "modern", label: "Современные (2000-2015)" },
-      { value: "contemporary", label: "Новинки (2015+)" },
-      { value: "any", label: "Не важно" },
+      { value: "alone", label: "👤 один" },
+      { value: "friends", label: "👥 с друзьями" },
+      { value: "family", label: "👨‍👩‍👧‍👦 с семьёй" },
+      { value: "children", label: "👶 с детьми" },
     ],
   },
 ]
@@ -103,6 +132,8 @@ export default function MovieQuiz({
 }: MovieQuizProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [showResults, setShowResults] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const handleAnswer = (questionId: string, answer: string) => {
     setAnswers((prev) => ({
@@ -115,46 +146,35 @@ export default function MovieQuiz({
     if (currentQuestion < surveyQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1)
     } else {
-      // Survey completed
-      setSurveyResults(recommendedMovies)
+      setSurveyResults(recommendedMovies.length > 0 ? [recommendedMovies[0]] : [])
       setShowSurveyModal(false)
+      setShowResults(true)
       setCurrentQuestion(0)
-      // In a real app, we would send the answers to an API
       console.log("Survey answers:", answers)
     }
   }
 
+  const prevQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion((prev) => prev - 1)
+    }
+  }
+
+  const resetSurvey = () => {
+    setSurveyResults(null)
+    setAnswers({})
+    setShowResults(false)
+    setCurrentQuestion(0)
+  }
+
   return (
-    <div className="transform rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm transition-all h-full">
-      <div className="flex items-center space-x-3 mb-6">
-        <Brain className="h-8 w-8 text-purple-500" />
-        <h2 className="text-2xl font-bold">Подбор сериала по вкусу</h2>
-      </div>
-
-      {surveyResults ? (
-        <div>
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-2">Ваши рекомендации</h3>
-            <p className="text-gray-400">Основываясь на ваших предпочтениях, мы думаем, что вам понравятся эти сериалы:</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {surveyResults.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
-            ))}
-          </div>
-
-          <button
-            onClick={() => {
-              setSurveyResults(null)
-              setAnswers({})
-            }}
-            className="mt-6 w-full flex items-center justify-center rounded-lg border border-purple-500 px-4 py-3 font-medium text-purple-400 transition-colors hover:bg-purple-500/10"
-          >
-            Пройти опрос снова
-          </button>
+    <>
+      <div className="rounded-xl bg-gray-800/50 p-8 shadow-2xl backdrop-blur-sm">
+        <div className="flex items-center space-x-3 mb-6">
+          <Brain className="h-8 w-8 text-purple-500" />
+          <h2 className="text-2xl font-bold">Подбор сериала по вкусу</h2>
         </div>
-      ) : (
+
         <div>
           <p className="text-gray-400 mb-6">
             Не знаете, что посмотреть? Ответьте на несколько вопросов, и мы порекомендуем сериалы, подходящие вашему настроению и предпочтениям.
@@ -168,61 +188,173 @@ export default function MovieQuiz({
             <ArrowRight className="ml-2 h-4 w-4 opacity-70 transition-transform group-hover:translate-x-1" />
           </button>
         </div>
-      )}
+      </div>
 
-      {/* Survey Modal */}
       {showSurveyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setShowSurveyModal(false)}></div>
-
-          <div className="relative z-10 w-full max-w-md rounded-xl bg-gray-800 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="w-full max-w-xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <button
-              onClick={() => setShowSurveyModal(false)}
+              onClick={() => {setShowSurveyModal(false)
+                resetSurvey()
+              }}
               className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-700 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
 
             <div className="mb-6">
-              <h3 className="text-xl font-bold mb-1">Movie Preference Quiz</h3>
+              <h3 className="text-xl font-bold mb-1">Подбор сериала</h3>
               <p className="text-gray-400 text-sm">
-                Question {currentQuestion + 1} of {surveyQuestions.length}
+                Вопрос {currentQuestion + 1} из {surveyQuestions.length}
               </p>
             </div>
 
             <div className="mb-6">
               <h4 className="text-lg font-medium mb-4">{surveyQuestions[currentQuestion].question}</h4>
 
-              <div className="space-y-3">
-                {surveyQuestions[currentQuestion].options.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleAnswer(surveyQuestions[currentQuestion].id, option.value)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                      answers[surveyQuestions[currentQuestion].id] === option.value
-                        ? "bg-purple-600 text-white"
-                        : "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              {surveyQuestions[currentQuestion].id === "country" ? (
+                <div className="space-y-3">
+                  <div className="relative mb-4">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      className="bg-gray-700 text-white placeholder-gray-400 border-none rounded-lg block w-full pl-10 p-2.5 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      placeholder="Поиск страны..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="max-h-64 overflow-y-auto pr-1 space-y-2">
+                    {surveyQuestions[currentQuestion].options
+                      .filter(option => 
+                        searchQuery === "" || 
+                        option.label.toLowerCase().includes(searchQuery.toLowerCase())
+                      )
+                      .map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => handleAnswer(surveyQuestions[currentQuestion].id, option.value)}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            answers[surveyQuestions[currentQuestion].id] === option.value
+                              ? "bg-purple-600 text-white"
+                              : "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {surveyQuestions[currentQuestion].options.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleAnswer(surveyQuestions[currentQuestion].id, option.value)}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                        answers[surveyQuestions[currentQuestion].id] === option.value
+                          ? "bg-purple-600 text-white"
+                          : "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="flex justify-end">
-              <button
-                onClick={nextQuestion}
-                disabled={!answers[surveyQuestions[currentQuestion].id]}
-                className="flex items-center space-x-2 px-6 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
-              >
-                <span>{currentQuestion === surveyQuestions.length - 1 ? "Finish" : "Next"}</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
+            <div className="flex justify-between">
+              {currentQuestion > 0 && (
+                <button
+                  onClick={prevQuestion}
+                  className="flex items-center space-x-2 px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <span>Назад</span>
+                </button>
+              )}
+              <div className={currentQuestion === 0 ? "w-full flex justify-end" : ""}>
+                <button
+                  onClick={nextQuestion}
+                  disabled={!answers[surveyQuestions[currentQuestion].id]}
+                  className="flex items-center space-x-2 px-6 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span>{currentQuestion === surveyQuestions.length - 1 ? "Готово" : "Дальше"}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+
+      {surveyResults && showResults && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="w-full max-w-xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <button
+              onClick={() => setShowResults(false)}
+              className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-700 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {surveyResults.length > 0 ? (
+              <>
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold mb-2">Идеальный выбор для вас</h3>
+                  <p className="text-gray-400">Основываясь на ваших предпочтениях, мы рекомендуем:</p>
+                </div>
+                
+                <div className="flex flex-col">
+                  <h2 className="text-2xl font-bold mb-2">{surveyResults[0].title}</h2>
+                  
+                  <div className="relative w-full mb-4 rounded-lg overflow-hidden">
+                    <img 
+                      src={surveyResults[0].image} 
+                      alt={surveyResults[0].title}
+                      className="w-full h-auto object-cover"
+                    />
+                    <div className="absolute top-2 right-2 bg-black/70 text-yellow-400 font-bold px-2 py-1 rounded text-sm">
+                      ★ {surveyResults[0].rating}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {surveyResults[0].genres.map((genre: string, index: number) => (
+                      <span key={index} className="bg-purple-600/30 text-purple-200 px-3 py-1 rounded-full text-sm">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center text-gray-400 mb-6">
+                    <span className="mr-4">Год: {surveyResults[0].year}</span>
+                    <span>ID: {surveyResults[0].id}</span>
+                  </div>
+                  
+                  <p className="text-gray-300 mb-6">
+                    Этот захватывающий сериал отлично соответствует вашим предпочтениям. 
+                    Насладитесь просмотром качественного кино, которое мы специально подобрали для вас.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-400">К сожалению, мы не смогли найти подходящих рекомендаций. Пожалуйста, попробуйте другие варианты.</p>
+            )}
+
+            <button
+              onClick={resetSurvey}
+              className="mt-2 w-full flex items-center justify-center rounded-lg border border-purple-500 px-4 py-3 font-medium text-purple-400 transition-colors hover:bg-purple-500/10"
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
