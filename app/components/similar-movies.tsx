@@ -1,18 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, X } from "lucide-react"
-
-const allMovies = [
-  {
-    id: 201,
-    title: "Крестный отец",
-    image: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
-    year: 1972,
-    rating: 9.2,
-    genres: ["Криминал", "Драма"],
-  },
-]
+import { getAllMoviesMap, getSimilarMovie } from "@/lib/actions/reccomendations"
 
 const similarMoviesResults = [
   {
@@ -31,6 +21,17 @@ export default function SimilarMovies() {
   const [showResults, setShowResults] = useState(false)
   const [similarMovies, setSimilarMovies] = useState<any[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
+  const [allMovies, setAllMovies] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchAllMovies = async () => {
+      const result = await getAllMoviesMap();
+      if (result.success && result.map) {
+        setAllMovies(result.map);
+      }
+    }
+    fetchAllMovies();
+  }, [])
 
   const filteredMovies = allMovies.filter((movie) => movie.title.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -40,9 +41,17 @@ export default function SimilarMovies() {
     setShowDropdown(false)
   }
 
-  const handleFindSimilar = () => {
-    setSimilarMovies(similarMoviesResults.length > 0 ? [similarMoviesResults[0]] : [])
-    setShowResults(true)
+  const handleFindSimilar = async () => {
+    if (!selectedMovie) return;
+    
+    const result = await getSimilarMovie(selectedMovie.id);
+    if (result.success && result.recommendations) {
+      setSimilarMovies([result.recommendations]);
+      setShowResults(true);
+    } else {
+      setSimilarMovies([]);
+      setShowResults(true);
+    }
   }
 
   const handleClearSelection = () => {
@@ -95,7 +104,7 @@ export default function SimilarMovies() {
                         onClick={() => handleSelectMovie(movie)}
                         className="w-full text-left px-4 py-2 hover:bg-gray-600 transition-colors"
                       >
-                        {movie.title} ({movie.year})
+                        {movie.title}
                       </button>
                     ))
                   ) : (

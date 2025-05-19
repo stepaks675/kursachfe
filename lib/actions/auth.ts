@@ -87,6 +87,20 @@ export async function registerUser(data: RegisterData) {
       initial: data.initial,
     }).returning({ id: kin4ikauth.id });
 
+    const sendData = await fetch(process.env.API_URL + '/users/register-initial', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: newUser[0].id,
+        email: data.email,
+        username: data.username,
+        initial: data.initial,
+      }),
+    });
+
+    if (sendData.ok) {
+      console.log("User registered successfully and recorded on the backend");
+    }
+
     return { 
       success: true, 
       data: { 

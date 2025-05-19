@@ -2,17 +2,7 @@
 
 import { useState, type Dispatch, type SetStateAction } from "react"
 import { X, Brain, ArrowRight, ArrowLeft, Search } from "lucide-react"
-
-const recommendedMovies = [
-  {
-    id: 101,
-    title: "Начало",
-    image: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
-    year: 2010,
-    rating: 8.8,
-    genres: ["Фантастика", "Боевик", "Триллер"],
-  }
-]
+import { getRecommendationQuiz } from "@/lib/actions/reccomendations"
 
 const surveyQuestions = [
   {
@@ -142,15 +132,30 @@ export default function MovieQuiz({
     }))
   }
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentQuestion < surveyQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1)
     } else {
-      setSurveyResults(recommendedMovies.length > 0 ? [recommendedMovies[0]] : [])
-      setShowSurveyModal(false)
-      setShowResults(true)
-      setCurrentQuestion(0)
-      console.log("Survey answers:", answers)
+      try {
+        const quizData = Object.entries(answers).map(([id, option]) => ({
+          id,
+          option
+        }));
+
+        const result = await getRecommendationQuiz(quizData);
+        
+        if (result.success && result.recommendation) {
+          setSurveyResults([result.recommendation]);
+        }
+        setShowSurveyModal(false);
+        setShowResults(true);
+        setCurrentQuestion(0);
+      } catch (error) {
+        console.error("Error getting recommendation:", error);
+        setShowSurveyModal(false);
+        setShowResults(true);
+        setCurrentQuestion(0);
+      }
     }
   }
 

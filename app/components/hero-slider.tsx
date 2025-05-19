@@ -1,85 +1,51 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight, Star, Play } from "lucide-react"
-import Link from "next/link"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import Image from "next/image"
-
-const featuredMovies = [
-  {
-    id: 1,
-    title: "Дюна: Часть вторая",
-    description:
-      "Пол Атрейдес объединяется с Чани и фременами, чтобы отомстить заговорщикам, уничтожившим его семью.",
-    image: "/placeholder.svg?height=1080&width=1920",
-    banner: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
-    rating: 8.6,
-    year: 2024,
-    genres: ["Фантастика", "Приключения", "Драма"],
-  },
-  {
-    id: 2,
-    title: "Оппенгеймер",
-    description:
-      "История американского учёного Роберта Оппенгеймера и его роли в создании атомной бомбы.",
-    image: "/placeholder.svg?height=1080&width=1920",
-    banner: "https://gamemag.ru/images/imagemanager/cache/14/12aa/1412aa_uhdpaper.com-download-pc-2k-wallpaper-59-0-f.jpg",
-    rating: 8.4,
-    year: 2023,
-
-    genres: ["Биография", "Драма", "История"],
-  },
-  {
-    id: 3,
-    title: "Бэтмен",
-    description:
-      "Когда садист-убийца начинает убивать ключевых политиков Готэма, Бэтмен вынужден расследовать эти преступления.",
-    image: "/placeholder.svg?height=1080&width=1920",
-    banner: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
-    rating: 7.8,
-    year: 2022,
-
-    genres: ["Боевик", "Криминал", "Драма"],
-  },
-  {
-    id: 4,
-    title: "Всё везде и сразу",
-    description:
-      "Пожилая китаянка оказывается втянута в безумное приключение, где только она может спасти мир, исследуя другие вселенные.",
-    image: "/placeholder.svg?height=1080&width=1920",
-    banner: "https://gamemag.ru/images/imagemanager/cache/14/12aa/1412aa_uhdpaper.com-download-pc-2k-wallpaper-59-0-f.jpg",
-    rating: 7.9,
-    year: 2022,
-
-    genres: ["Боевик", "Приключения", "Комедия"],
-  },
-]
+import { getMedianReccomendations } from "@/lib/actions/reccomendations"
+import type { Movie } from "@/lib/types/movie"
 
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [movies, setMovies] = useState<Movie[]>([])
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      const response = await getMedianReccomendations()
+      if (response.success && response.recommendations) {
+        setMovies(response.recommendations)
+      }
+    }
+    fetchMovies()
+  }, [])
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev === featuredMovies.length - 1 ? 0 : prev + 1))
-  }, [])
+    setCurrentSlide((prev) => (prev === movies.length - 1 ? 0 : prev + 1))
+  }, [movies.length])
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev === 0 ? featuredMovies.length - 1 : prev - 1))
-  }, [])
+    setCurrentSlide((prev) => (prev === 0 ? movies.length - 1 : prev - 1))
+  }, [movies.length])
 
-  // Auto-advance slides
   useEffect(() => {
+    if (movies.length === 0) return
+
     const interval = setInterval(() => {
       nextSlide()
     }, 6000)
 
     return () => clearInterval(interval)
-  }, [nextSlide])
+  }, [nextSlide, movies.length])
+
+  if (movies.length === 0) {
+    return null
+  }
 
   return (
-    <section className="relative h-[80vh] overflow-hidden">
-      {/* Slides */}
+    <section className="relative w-full" style={{ height: "min(80vh, 700px)" }}>
       <div className="relative h-full w-full">
-        {featuredMovies.map((movie, index) => (
+        {movies.map((movie, index) => (
           <div
             key={movie.id}
             className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -88,19 +54,19 @@ export default function HeroSlider() {
           >
             <div className="absolute inset-0">
               <Image
-                src={movie.banner || "/placeholder.svg"}
+                src={movie.image || "/placeholder.svg"}
                 alt={movie.title}
                 fill
-                className="object-cover"
+                className="object-fill object-center"
                 priority={index === currentSlide}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent" />
             </div>
 
             <div className="absolute inset-0 flex items-end">
-              <div className="container mx-auto px-4 pb-16 md:pb-24">
-                <div className="max-w-2xl">
-                  <div className="flex items-center space-x-2 mb-3">
+              <div className="container mx-auto px-4 pb-12 md:pb-16 lg:pb-24">
+                <div className="max-w-xl md:max-w-2xl">
+                  <div className="flex items-center space-x-2 mb-2 md:mb-3">
                     <div className="flex items-center space-x-1 bg-purple-600/80 px-2 py-1 rounded text-xs font-medium">
                       <Star className="h-3 w-3 fill-current" />
                       <span>{movie.rating}</span>
@@ -108,36 +74,24 @@ export default function HeroSlider() {
                     <div className="text-xs font-medium text-gray-300">{movie.year}</div>
                   </div>
 
-                  <h1 className="text-4xl md:text-6xl font-bold mb-3">{movie.title}</h1>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-3">
+                    {movie.title}
+                  </h1>
 
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 md:mb-4">
                     {movie.genres.map((genre) => (
                       <span
                         key={genre}
-                        className="px-3 py-1 bg-gray-800/60 backdrop-blur-sm rounded-full text-xs font-medium"
+                        className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gray-800/60 backdrop-blur-sm rounded-full text-xs font-medium"
                       >
                         {genre}
                       </span>
                     ))}
                   </div>
 
-                  <p className="text-gray-300 mb-6 line-clamp-3">{movie.description}</p>
-
-                  <div className="flex flex-wrap gap-4">
-                    <Link
-                      href={`/movie/${movie.id}`}
-                      className="flex items-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
-                    >
-                      <Play className="h-5 w-5 fill-current" />
-                      <span>Смотреть сейчас</span>
-                    </Link>
-                    <Link
-                      href={`/movie/${movie.id}/details`}
-                      className="px-6 py-3 bg-gray-800/60 hover:bg-gray-700/60 backdrop-blur-sm rounded-lg font-medium transition-colors"
-                    >
-                      Подробнее
-                    </Link>
-                  </div>
+                  <p className="text-sm sm:text-base text-gray-300 mb-4 md:mb-6 line-clamp-2 sm:line-clamp-3">
+                    {movie.description}
+                  </p>
                 </div>
               </div>
             </div>
@@ -145,32 +99,33 @@ export default function HeroSlider() {
         ))}
       </div>
 
-      {/* Navigation arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-gray-800/60 backdrop-blur-sm hover:bg-gray-700/60 transition-colors z-10"
-        aria-label="Предыдущий слайд"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-gray-800/60 backdrop-blur-sm hover:bg-gray-700/60 transition-colors z-10"
-        aria-label="Следующий слайд"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
+      <div className="absolute bottom-4 sm:bottom-auto sm:top-1/2 left-0 right-0 sm:-translate-y-1/2 flex justify-between px-2 sm:px-4 md:px-6 z-10">
+        <button
+          onClick={prevSlide}
+          className="p-1.5 sm:p-2 rounded-full bg-gray-800/60 backdrop-blur-sm hover:bg-gray-700/60 transition-colors"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="p-1.5 sm:p-2 rounded-full bg-gray-800/60 backdrop-blur-sm hover:bg-gray-700/60 transition-colors"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
+        </button>
+      </div>
 
-      {/* Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-        {featuredMovies.map((_, index) => (
+      {/* Slide indicators - moved above the content on mobile */}
+      <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5 sm:space-x-2 z-10">
+        {movies.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentSlide ? "w-8 bg-purple-500" : "bg-gray-400/50 hover:bg-gray-400"
+            className={`h-1.5 sm:h-2 rounded-full transition-all ${
+              index === currentSlide ? "w-6 sm:w-8 bg-purple-500" : "w-1.5 sm:w-2 bg-gray-400/50 hover:bg-gray-400"
             }`}
-            aria-label={`Перейти к слайду ${index + 1}`}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
