@@ -9,13 +9,16 @@ import type { Movie } from "@/lib/types/movie"
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [movies, setMovies] = useState<Movie[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchMovies = async () => {
+      setIsLoading(true)
       const response = await getMedianReccomendations()
       if (response.success && response.recommendations) {
         setMovies(response.recommendations)
       }
+      setIsLoading(false)
     }
     fetchMovies()
   }, [])
@@ -36,7 +39,30 @@ export default function HeroSlider() {
     }, 6000)
 
     return () => clearTimeout(timeout)
-  }, [currentSlide, movies.length])
+  }, [currentSlide, movies.length, nextSlide])
+
+  if (isLoading) {
+    return (
+      <section className="relative w-full" style={{ height: "min(80vh, 700px)" }}>
+        <div className="absolute inset-0 bg-gray-900 animate-pulse">
+          <div className="absolute inset-0 flex items-end">
+            <div className="container mx-auto px-4 pb-12 md:pb-16 lg:pb-24">
+              <div className="max-w-xl md:max-w-2xl space-y-4">
+                <div className="h-6 w-24 bg-gray-800 rounded animate-pulse"></div>
+                <div className="h-12 w-3/4 bg-gray-800 rounded animate-pulse"></div>
+                <div className="flex gap-2">
+                  <div className="h-6 w-16 bg-gray-800 rounded-full animate-pulse"></div>
+                  <div className="h-6 w-16 bg-gray-800 rounded-full animate-pulse"></div>
+                  <div className="h-6 w-16 bg-gray-800 rounded-full animate-pulse"></div>
+                </div>
+                <div className="h-20 w-full bg-gray-800 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   if (movies.length === 0) {
     return null
