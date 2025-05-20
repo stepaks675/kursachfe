@@ -1,4 +1,4 @@
-import { pgTable, serial, text, json, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, json} from 'drizzle-orm/pg-core';
 
 export const kin4ikauth = pgTable('kin4ikauth', {
   id: serial('id').primaryKey(),
