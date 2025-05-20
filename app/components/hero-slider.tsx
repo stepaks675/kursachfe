@@ -31,12 +31,12 @@ export default function HeroSlider() {
   useEffect(() => {
     if (movies.length === 0) return
 
-    const interval = setInterval(() => {
+    const timeout = setTimeout(() => {
       nextSlide()
     }, 6000)
 
-    return () => clearInterval(interval)
-  }, [nextSlide, movies.length])
+    return () => clearTimeout(timeout)
+  }, [currentSlide, movies.length])
 
   if (movies.length === 0) {
     return null
@@ -116,7 +116,6 @@ export default function HeroSlider() {
         </button>
       </div>
 
-      {/* Slide indicators - moved above the content on mobile */}
       <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5 sm:space-x-2 z-10">
         {movies.map((_, index) => (
           <button
