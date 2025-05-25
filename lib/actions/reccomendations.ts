@@ -3,6 +3,10 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/options";
 import { Movie } from "@/lib/types/movie";
+import { db } from "@/lib/db";
+import { movieHistory } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
+
 const mockMap = [
     { "id": 1, "title": "Breaking Bad" },  { "id": 2, "title": "The Office" }
 ]
@@ -133,5 +137,59 @@ export async function getSimilarMovie(movieId: number): Promise<{ success: boole
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     return { success: true, recommendations: mockRecommendations[0] };
+  }
+}
+
+export async function saveRecommendationToHistory(movie: Movie): Promise<{ success: boolean; error?: string }> {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.id) {
+    return { success: false, error: "Вы не авторизованы" };
+  }
+
+  try {
+    await db.insert(movieHistory).values({
+      userId: parseInt(session.user.id),
+      movieId: movie.id,
+      movieTitle: movie.title,
+      movieDescription: movie.description,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving recommendation to history:", error);
+    return { success: false, error: "Ошибка при сохранении рекомендации" };
+  }
+}
+
+export async function getRecommendationHistory(): Promise<{
+  success: boolean;
+  error?: string;
+  history?: Array<{
+    id: number;
+    movieId: number | null;
+    movieTitle: string | null;
+    movieDescription: string | null;
+    createdAt: Date | null;
+  }>;
+}> {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.id) {
+    return { success: false, error: "Вы не авторизованы" };
+  }
+
+  try {
+    const history = await db
+      .select()
+      .from(movieHistory)
+      .where(eq(movieHistory.userId, parseInt(session.user.id)))
+      .orderBy(desc(movieHistory.createdAt))
+      .limit(20);
+
+    return { success: true, history };
+  } catch (error) {
+    console.error("Error fetching recommendation history:", error);
+    return { success: false, error: "Ошибка при получении истории рекомендаций" };
   }
 }

@@ -7,6 +7,7 @@ import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import { redirect } from "next/navigation"
 import { getUserPreferences, UserPreferences } from "@/lib/actions/user"
+import { getRecommendationHistory } from "@/lib/actions/reccomendations"
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -14,14 +15,10 @@ export default function ProfilePage() {
   const [userPrefs, setUserPrefs] = useState<UserPreferences | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [recommendationHistory, setRecommendationHistory] = useState<any[]>([])
+  const [historyLoading, setHistoryLoading] = useState(true)
   
-  const mockRecommendations = [
-    { id: 1, title: "Интерстеллар", date: "12.05.2023", posterUrl: "/interstellar.jpg" },
-    { id: 2, title: "Начало", date: "10.05.2023", posterUrl: "/inception.jpg" },
-    { id: 3, title: "Матрица", date: "05.05.2023", posterUrl: "/matrix.jpg" },
-    { id: 4, title: "Матрица", date: "05.05.2023", posterUrl: "/matrix.jpg" },
-    { id: 5, title: "Матрица", date: "05.05.2023", posterUrl: "/matrix.jpg" },
-  ]
+
   
   const genreLabels: Record<string, string> = {
     documentation: "Документальные",
@@ -67,26 +64,36 @@ export default function ProfilePage() {
   }
   
   useEffect(() => {
-    async function loadUserPreferences() {
+    async function loadUserData() {
       try {
         setIsLoading(true)
-        const result = await getUserPreferences()
+        setHistoryLoading(true)
         
-        if (result.success && result.data) {
-          setUserPrefs(result.data)
-        } else if (result.error) {
-          setError(result.error)
+        const [prefsResult, historyResult] = await Promise.all([
+          getUserPreferences(),
+          getRecommendationHistory()
+        ])
+        
+        if (prefsResult.success && prefsResult.data) {
+          setUserPrefs(prefsResult.data)
+        } else if (prefsResult.error) {
+          setError(prefsResult.error)
+        }
+
+        if (historyResult.success && historyResult.history) {
+          setRecommendationHistory(historyResult.history)
         }
       } catch (err) {
-        console.error("Failed to load user preferences:", err)
-        setError("Не удалось загрузить предпочтения пользователя")
+        console.error("Failed to load user data:", err)
+        setError("Не удалось загрузить данные пользователя")
       } finally {
         setIsLoading(false)
+        setHistoryLoading(false)
       }
     }
 
     if (status === "authenticated") {
-      loadUserPreferences()
+      loadUserData()
     }
   }, [status])
 
@@ -121,8 +128,8 @@ export default function ProfilePage() {
   }
 
   const itemsPerPage = 3
-  const totalPages = Math.ceil(mockRecommendations.length / itemsPerPage)
-  const paginatedRecommendations = mockRecommendations.slice(
+  const totalPages = Math.ceil(recommendationHistory.length / itemsPerPage)
+  const paginatedRecommendations = recommendationHistory.slice(
     currentPage * itemsPerPage, 
     (currentPage + 1) * itemsPerPage
   )
@@ -210,38 +217,59 @@ export default function ProfilePage() {
                   </div>
                   
                   {/* Pagination Controls */}
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={goToPrevPage}
-                      disabled={currentPage === 0}
-                      className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <span className="text-sm">{currentPage + 1} / {totalPages}</span>
-                    <button 
-                      onClick={goToNextPage}
-                      disabled={currentPage === totalPages - 1}
-                      className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </div>
+                  {recommendationHistory.length > itemsPerPage && (
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        onClick={goToPrevPage}
+                        disabled={currentPage === 0}
+                        className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <span className="text-sm">{currentPage + 1} / {totalPages}</span>
+                      <button 
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages - 1}
+                        className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {paginatedRecommendations.map((movie) => (
-                    <div key={movie.id} className="bg-gray-700/50 rounded-lg overflow-hidden">
-                      <div className="h-40 bg-gray-600 flex items-center justify-center">
-                        <Film className="h-16 w-16 text-gray-500" />
+                {historyLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                  </div>
+                ) : recommendationHistory.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <Film className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <p>История рекомендаций пуста</p>
+                    <p className="text-sm">Пройдите опрос или найдите похожие сериалы, чтобы увидеть рекомендации здесь</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {paginatedRecommendations.map((item) => (
+                      <div key={item.id} className="bg-gray-700/50 rounded-lg overflow-hidden">
+                        <div className="h-40 bg-gray-600 flex items-center justify-center">
+                          <Film className="h-16 w-16 text-gray-500" />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-medium">{item.movieTitle}</h3>
+                          <p className="text-gray-400 text-sm">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('ru-RU') : 'Дата неизвестна'}
+                          </p>
+                          {item.movieDescription && (
+                            <p className="text-gray-300 text-xs mt-2 line-clamp-2">
+                              {item.movieDescription}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="p-3">
-                        <h3 className="font-medium">{movie.title}</h3>
-                        <p className="text-gray-400 text-sm">{movie.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

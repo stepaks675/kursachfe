@@ -58,6 +58,8 @@ export async function checkUsernameExists(username: string) {
 
 export async function registerUser(data: RegisterData) {
   try {
+    console.log("Starting user registration for:", data.email);
+    
     if (!data.email || !data.username || !data.password) {
       return { success: false, error: 'Все поля обязательны для заполнения' };
     }
@@ -87,20 +89,38 @@ export async function registerUser(data: RegisterData) {
       initial: data.initial,
     }).returning({ id: kin4ikauth.id });
 
-    const sendData = await fetch(process.env.API_URL + '/users/register-initial', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: newUser[0].id,
-        email: data.email,
-        username: data.username,
-        initial: data.initial,
-      }),
-    });
+    console.log("User created in database with ID:", newUser[0].id);
 
-    if (sendData.ok) {
-      console.log("User registered successfully and recorded on the backend");
+    // Попытка отправить данные на внешний API (необязательно)
+    try {
+      if (process.env.API_URL) {
+        const sendData = await fetch(process.env.API_URL + '/users/register-initial', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: newUser[0].id,
+            email: data.email,
+            username: data.username,
+            initial: data.initial,
+          }),
+        });
+
+        if (sendData.ok) {
+          console.log("User registered successfully and recorded on the backend");
+        } else {
+          console.warn("Failed to record user on backend, but registration was successful");
+        }
+      } else {
+        console.warn("API_URL not configured, skipping external API call");
+      }
+    } catch (apiError) {
+      console.warn("External API unavailable, but registration was successful:", apiError);
     }
 
+    console.log("Registration completed successfully for user ID:", newUser[0].id);
+    
     return { 
       success: true, 
       data: { 

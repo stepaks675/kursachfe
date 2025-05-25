@@ -267,12 +267,20 @@ export default function RegisterPage() {
         episodeDuration: formData.episodeDuration
       }
 
+      console.log("Submitting registration with data:", { 
+        email: formData.email, 
+        username: formData.username, 
+        initial: initialData 
+      })
+
       const result = await registerUser({
         email: formData.email,
         username: formData.username,
         password: formData.password,
         initial: initialData
       })
+
+      console.log("Registration result:", result)
 
       if (result.success) {
         setStep(3)

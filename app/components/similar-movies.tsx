@@ -2,18 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Search, X } from "lucide-react"
-import { getAllMoviesMap, getSimilarMovie } from "@/lib/actions/reccomendations"
-
-const similarMoviesResults = [
-  {
-    id: 301,
-    title: "Казино",
-    image: "https://i.pinimg.com/originals/61/81/52/618152b971ff5b62749da0fb08d8de37.jpg",
-    year: 1995,
-    rating: 8.2,
-    genres: ["Криминал", "Драма"],
-  },
-]
+import { getAllMoviesMap, getSimilarMovie, saveRecommendationToHistory } from "@/lib/actions/reccomendations"
 
 export default function SimilarMovies() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -48,6 +37,8 @@ export default function SimilarMovies() {
     if (result.success && result.recommendations) {
       setSimilarMovies([result.recommendations]);
       setShowResults(true);
+      // Сохраняем рекомендацию в историю
+      await saveRecommendationToHistory(result.recommendations);
     } else {
       setSimilarMovies([]);
       setShowResults(true);
@@ -169,8 +160,17 @@ export default function SimilarMovies() {
                     <span>ID: {similarMovies[0].id}</span>
                   </div>
                   
-                  <p className="text-gray-300 mb-6">
-                    Этот захватывающий сериал отлично соответствует вашим предпочтениям. 
+                  {similarMovies[0].description && (
+                    <div className="mb-6">
+                      <h4 className="text-lg font-semibold text-white mb-2">Описание</h4>
+                      <p className="text-gray-300 leading-relaxed">
+                        {similarMovies[0].description}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <p className="text-gray-400 text-sm mb-6">
+                    Этот сериал отлично соответствует вашим предпочтениям. 
                     Насладитесь просмотром качественного кино, которое мы специально подобрали для вас.
                   </p>
                 </div>

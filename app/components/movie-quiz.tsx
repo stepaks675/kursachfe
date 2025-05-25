@@ -2,7 +2,7 @@
 
 import { useState, type Dispatch, type SetStateAction } from "react"
 import { X, Brain, ArrowRight, ArrowLeft, Search } from "lucide-react"
-import { getRecommendationQuiz } from "@/lib/actions/reccomendations"
+import { getRecommendationQuiz, saveRecommendationToHistory } from "@/lib/actions/reccomendations"
 
 const surveyQuestions = [
   {
@@ -146,6 +146,8 @@ export default function MovieQuiz({
         
         if (result.success && result.recommendation) {
           setSurveyResults([result.recommendation]);
+          // Сохраняем рекомендацию в историю
+          await saveRecommendationToHistory(result.recommendation);
         }
         setShowSurveyModal(false);
         setShowResults(true);
@@ -341,8 +343,17 @@ export default function MovieQuiz({
                     <span>ID: {surveyResults[0].id}</span>
                   </div>
                   
-                  <p className="text-gray-300 mb-6">
-                    Этот захватывающий сериал отлично соответствует вашим предпочтениям. 
+                  {surveyResults[0].description && (
+                    <div className="mb-6">
+                      <h4 className="text-lg font-semibold text-white mb-2">Описание</h4>
+                      <p className="text-gray-300 leading-relaxed">
+                        {surveyResults[0].description}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <p className="text-gray-400 text-sm mb-6">
+                    Этот сериал отлично соответствует вашим предпочтениям. 
                     Насладитесь просмотром качественного кино, которое мы специально подобрали для вас.
                   </p>
                 </div>
