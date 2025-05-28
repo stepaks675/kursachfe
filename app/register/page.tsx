@@ -13,8 +13,8 @@ export default function RegisterPage() {
     username: "",
     password: "",
     genres: [] as string[],
-    timePeriod: "",
-    episodeDuration: "",
+    period: "",
+    duration: "",
   })
   const [error, setError] = useState("")
   const [currentQuestion, setCurrentQuestion] = useState(0)
@@ -80,7 +80,6 @@ export default function RegisterPage() {
   ]
 
   useEffect(() => {
-    // Redirect to login page after successful registration and a short delay
     if (registrationComplete) {
       const timer = setTimeout(() => {
         router.push("/login");
@@ -97,7 +96,6 @@ export default function RegisterPage() {
       [name]: value
     }))
     
-    // Clear error when user starts typing again
     if (error) {
       setError("")
     }
@@ -296,7 +294,7 @@ export default function RegisterPage() {
 
     switch (currentQ.type) {
       case "single":
-        if (currentQ.name === "timePeriod") {
+        if (currentQ.name === "period") {
           return (
             <div className="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
               {currentQ.options?.map((option) => (
@@ -304,13 +302,13 @@ export default function RegisterPage() {
                   key={option.value}
                   onClick={() => handleQuestionAnswer(option.value)}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
-                    formData.timePeriod === option.value
+                    formData.period === option.value
                       ? "bg-purple-600/70 hover:bg-purple-600"
                       : "bg-gray-600/50 hover:bg-gray-600"
                   }`}
                 >
                   <span>{option.label}</span>
-                  {formData.timePeriod === option.value && (
+                  {formData.period === option.value && (
                     <Check className="h-4 w-4" />
                   )}
                 </button>

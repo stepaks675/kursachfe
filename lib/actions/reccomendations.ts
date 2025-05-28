@@ -6,6 +6,7 @@ import { Movie } from "@/lib/types/movie";
 import { db } from "@/lib/db";
 import { movieHistory } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { processImageUrl } from "@/lib/utils/image";
 
 const mockMap = [
     { "id": 1, "title": "Breaking Bad" },  { "id": 2, "title": "The Office" }
@@ -63,7 +64,14 @@ export async function getMedianReccomendations(): Promise<{
 
     const recommendations = await data.json();
     console.log("API response body:", JSON.stringify(recommendations, null, 2));
-    return { success: true, recommendations };
+    
+    // Обрабатываем изображения в рекомендациях
+    const processedRecommendations = recommendations.map((movie: Movie) => ({
+      ...movie,
+      image: processImageUrl(movie.image)
+    }));
+    
+    return { success: true, recommendations: processedRecommendations };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     return { success: true, recommendations: mockRecommendations };
@@ -109,7 +117,14 @@ export async function getRecommendationQuiz(
     }
     const recommendation = await data.json();
     console.log("API response body:", JSON.stringify(recommendation, null, 2));
-    return { success: true, recommendation };
+    
+    // Обрабатываем изображения в рекомендациях
+    const processedRecommendation = recommendation.map((movie: Movie) => ({
+      ...movie,
+      image: processImageUrl(movie.image)
+    }));
+    
+    return { success: true, recommendation: processedRecommendation };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     return { success: true, recommendation: mockRecommendations };
@@ -168,7 +183,14 @@ export async function getSimilarMovie(movieId: number): Promise<{ success: boole
     }
     const recommendations = await data.json();
     console.log("API response body:", JSON.stringify(recommendations, null, 2));
-    return { success: true, recommendations: recommendations };
+    
+    // Обрабатываем изображения в рекомендациях
+    const processedRecommendations = recommendations.map((movie: Movie) => ({
+      ...movie,
+      image: processImageUrl(movie.image)
+    }));
+    
+    return { success: true, recommendations: processedRecommendations };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     return { success: true, recommendations: mockRecommendations };
