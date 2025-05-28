@@ -3,6 +3,8 @@
 import { useState, type Dispatch, type SetStateAction } from "react"
 import { X, Brain, ArrowRight, ArrowLeft, Loader2 } from "lucide-react"
 import { getRecommendationQuiz, saveRecommendationToHistory } from "@/lib/actions/reccomendations"
+import { Movie } from "@/lib/types/movie"
+import { formatRating } from "@/lib/utils/rating"
 
 // Маппинг жанров с английского на русский
 const genreMapping: Record<string, string> = {
@@ -383,7 +385,7 @@ export default function MovieQuiz({
                         
                         {/* Rating badge */}
                         <div className="absolute top-2 right-2 bg-purple-600/90 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
-                          ★ {movie.rating}
+                          ★ {formatRating(movie.rating)}
                         </div>
 
                         {/* Hover info */}

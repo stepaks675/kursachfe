@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import Image from "next/image"
 import { getMedianReccomendations } from "@/lib/actions/reccomendations"
 import type { Movie } from "@/lib/types/movie"
+import { formatRating } from "@/lib/utils/rating"
 
 // Маппинг жанров с английского на русский
 const genreMapping: Record<string, string> = {
@@ -182,7 +183,7 @@ export default function HeroSlider() {
                             {/* Rating badge */}
                             <div className="absolute top-2 right-2 flex items-center space-x-1 bg-purple-600/90 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
                               <Star className="h-3 w-3 fill-current" />
-                              <span>{movie.rating}</span>
+                              <span>{formatRating(movie.rating)}</span>
                             </div>
 
                             {/* Hover info */}
