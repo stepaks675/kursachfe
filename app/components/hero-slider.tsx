@@ -6,6 +6,35 @@ import Image from "next/image"
 import { getMedianReccomendations } from "@/lib/actions/reccomendations"
 import type { Movie } from "@/lib/types/movie"
 
+// Маппинг жанров с английского на русский
+const genreMapping: Record<string, string> = {
+  action: "Боевик",
+  adventure: "Приключения", 
+  animation: "Анимация",
+  comedy: "Комедия",
+  crime: "Криминал",
+  documentary: "Документальный",
+  drama: "Драма",
+  family: "Семейный",
+  fantasy: "Фэнтези",
+  history: "Исторический",
+  horror: "Ужасы",
+  music: "Музыкальный",
+  mystery: "Мистика",
+  romance: "Романтика",
+  scifi: "Научная фантастика",
+  "sci-fi": "Научная фантастика",
+  thriller: "Триллер",
+  war: "Военный",
+  western: "Вестерн",
+  reality: "Реальность",
+  documentation: "Документальный",
+}
+
+const translateGenre = (genre: string): string => {
+  return genreMapping[genre.toLowerCase()] || genre
+}
+
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [movies, setMovies] = useState<Movie[]>([])
@@ -111,7 +140,7 @@ export default function HeroSlider() {
                         key={genre}
                         className="px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 bg-gray-800/70 backdrop-blur-sm rounded-full text-xs font-medium"
                       >
-                        {genre}
+                        {translateGenre(genre)}
                       </span>
                     ))}
                     {movie.genres.length > 3 && (

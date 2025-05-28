@@ -90,23 +90,30 @@ export async function registerUser(data: RegisterData) {
     }).returning({ id: kin4ikauth.id });
 
     console.log("User created in database with ID:", newUser[0].id);
-
-    // Попытка отправить данные на внешний API (необязательно)
     try {
       if (process.env.API_URL) {
+        const requestData = {
+          id: newUser[0].id,
+          email: data.email,
+          username: data.username,
+          initial: data.initial,
+        };
+        
+        console.log("Sending data to API:", JSON.stringify(requestData, null, 2));
+        console.log("API endpoint:", process.env.API_URL + '/users/register-initial');
+        
         const sendData = await fetch(process.env.API_URL + '/users/register-initial', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            id: newUser[0].id,
-            email: data.email,
-            username: data.username,
-            initial: data.initial,
-          }),
+          body: JSON.stringify(requestData),
         });
 
+        console.log("API response status:", sendData.status);
+        const responseData = await sendData.text();
+        console.log("API response body:", responseData);
+        
         if (sendData.ok) {
           console.log("User registered successfully and recorded on the backend");
         } else {

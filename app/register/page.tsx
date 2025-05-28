@@ -1,4 +1,3 @@
-//TODO: improve design, do right questions, add validation, add backend
 "use client"
 import Link from "next/link"
 import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react"
@@ -30,25 +29,24 @@ export default function RegisterPage() {
       type: "multi",
       question: "Какие жанры сериалов вы предпочитаете?",
       options: [
-        { value: "documentation", label: "Документальные" },
-        { value: "comedy", label: "Комедии" },
-        { value: "european", label: "Европейские" },
+        { value: "action", label: "Боевики" },
+        { value: "adventure", label: "Приключения" },
         { value: "animation", label: "Анимация" },
+        { value: "comedy", label: "Комедии" },
+        { value: "crime", label: "Криминальные" },
+        { value: "documentary", label: "Документальные" },
+        { value: "drama", label: "Драмы" },
         { value: "family", label: "Семейные" },
         { value: "fantasy", label: "Фэнтези" },
-        { value: "music", label: "Музыкальные" },
-        { value: "drama", label: "Драмы" },
-        { value: "action", label: "Боевики" },
-        { value: "war", label: "Военные" },
-        { value: "crime", label: "Криминальные" },
-        { value: "scifi", label: "Научная фантастика" },
-        { value: "reality", label: "Реалити-шоу" },
-        { value: "western", label: "Вестерны" },
-        { value: "thriller", label: "Триллеры" },
-        { value: "romance", label: "Романтические" },
+        { value: "history", label: "Исторические" },
         { value: "horror", label: "Ужасы" },
-        { value: "sport", label: "Спортивные" },
-        { value: "history", label: "Исторические" }
+        { value: "music", label: "Музыкальные" },
+        { value: "mystery", label: "Детективы" },
+        { value: "romance", label: "Романтические" },
+        { value: "scifi", label: "Научная фантастика" },
+        { value: "thriller", label: "Триллеры" },
+        { value: "war", label: "Военные" },
+        { value: "western", label: "Вестерны" }
       ],
       name: "genres",
       required: true
@@ -57,31 +55,26 @@ export default function RegisterPage() {
       type: "single",
       question: "Какой временной период в мире сериалов вам наиболее интересен?",
       options: [
-        { value: "1920s", label: "1920-е" },
-        { value: "1930s", label: "1930-е" },
-        { value: "1940s", label: "1940-е" },
-        { value: "1950s", label: "1950-е" },
-        { value: "1960s", label: "1960-е" },
-        { value: "1970s", label: "1970-е" },
-        { value: "1980s", label: "1980-е" },
-        { value: "1990s", label: "1990-е" },
-        { value: "2000s", label: "2000-е" },
-        { value: "2010s", label: "2010-е" },
-        { value: "2020s", label: "2020-е" },
+        { value: "1990-е", label: "1990-е" },
+        { value: "2000-е", label: "2000-е" },
+        { value: "2010-е", label: "2010-е" },
+        { value: "2020-е", label: "2020-е" },
+        { value: "any", label: "Любой период" }
       ],
-      name: "timePeriod",
+      name: "period",
       required: true
     },
     {
       type: "single",
       question: "Какова средняя продолжительность одной серии в ваших любимых сериалах? (в минутах)",
       options: [
-        { value: "under60", label: "до 60" },
-        { value: "60to120", label: "60-120" },
-        { value: "120to180", label: "120-180" },
-        { value: "180to210", label: "180-210" },
+        { value: "до 60", label: "до 60" },
+        { value: "60-120", label: "60-120" },
+        { value: "120-180", label: "120-180" },
+        { value: "180-210", label: "180-210" },
+        { value: "any", label: "Любая продолжительность" }
       ],
-      name: "episodeDuration",
+      name: "duration",
       required: true
     }
   ]
@@ -263,8 +256,8 @@ export default function RegisterPage() {
       
       const initialData = {
         genres: formData.genres,
-        timePeriod: formData.timePeriod,
-        episodeDuration: formData.episodeDuration
+        period: formData.period,
+        duration: formData.duration
       }
 
       console.log("Submitting registration with data:", { 

@@ -3,12 +3,42 @@
 import { useEffect, useState } from "react"
 import { Search, X } from "lucide-react"
 import { getAllMoviesMap, getSimilarMovie, saveRecommendationToHistory } from "@/lib/actions/reccomendations"
+import { Movie } from "@/lib/types/movie"
+
+// Маппинг жанров с английского на русский
+const genreMapping: Record<string, string> = {
+  action: "Боевик",
+  adventure: "Приключения", 
+  animation: "Анимация",
+  comedy: "Комедия",
+  crime: "Криминал",
+  documentary: "Документальный",
+  drama: "Драма",
+  family: "Семейный",
+  fantasy: "Фэнтези",
+  history: "Исторический",
+  horror: "Ужасы",
+  music: "Музыкальный",
+  mystery: "Мистика",
+  romance: "Романтика",
+  scifi: "Научная фантастика",
+  "sci-fi": "Научная фантастика",
+  thriller: "Триллер",
+  war: "Военный",
+  western: "Вестерн",
+  reality: "Реальность",
+  documentation: "Документальный",
+}
+
+const translateGenre = (genre: string): string => {
+  return genreMapping[genre.toLowerCase()] || genre
+}
 
 export default function SimilarMovies() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null)
   const [showResults, setShowResults] = useState(false)
-  const [similarMovies, setSimilarMovies] = useState<any[]>([])
+  const [similarMovies, setSimilarMovies] = useState<Movie[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [allMovies, setAllMovies] = useState<any[]>([])
 
@@ -35,10 +65,12 @@ export default function SimilarMovies() {
     
     const result = await getSimilarMovie(selectedMovie.id);
     if (result.success && result.recommendations) {
-      setSimilarMovies([result.recommendations]);
+      setSimilarMovies(result.recommendations);
       setShowResults(true);
-      // Сохраняем рекомендацию в историю
-      await saveRecommendationToHistory(result.recommendations);
+
+      if (result.recommendations.length > 0) {
+        await saveRecommendationToHistory(result.recommendations[0]);
+      }
     } else {
       setSimilarMovies([]);
       setShowResults(true);
@@ -118,7 +150,7 @@ export default function SimilarMovies() {
 </div>
       {similarMovies && showResults && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
-          <div className="w-full max-w-xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <div className="w-full max-w-3xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <button
               onClick={() => setShowResults(false)}
               className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-700 transition-colors"
@@ -129,51 +161,54 @@ export default function SimilarMovies() {
             {similarMovies.length > 0 ? (
               <>
                 <div className="mb-4">
-                  <h3 className="text-xl font-semibold mb-2">Идеальный выбор для вас</h3>
+                  <h3 className="text-xl font-semibold mb-2">Идеальные сериалы для вас</h3>
                   <p className="text-gray-400">Основываясь на ваших предпочтениях, мы рекомендуем:</p>
                 </div>
                 
-                <div className="flex flex-col">
-                  <h2 className="text-2xl font-bold mb-2">{similarMovies[0].title}</h2>
-                  
-                  <div className="relative w-full mb-4 rounded-lg overflow-hidden">
-                    <img 
-                      src={similarMovies[0].image} 
-                      alt={similarMovies[0].title}
-                      className="w-full h-auto object-cover"
-                    />
-                    <div className="absolute top-2 right-2 bg-black/70 text-yellow-400 font-bold px-2 py-1 rounded text-sm">
-                      ★ {similarMovies[0].rating}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {similarMovies.map((movie, index) => (
+                    <div key={index} className="flex flex-col bg-gray-700/50 rounded-lg overflow-hidden">
+                      <div className="relative w-full">
+                        <img 
+                          src={movie.image} 
+                          alt={movie.title}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="absolute top-2 right-2 bg-black/70 text-yellow-400 font-bold px-2 py-1 rounded text-sm">
+                          ★ {movie.rating}
+                        </div>
+                      </div>
+                      
+                      <div className="p-4">
+                        <h2 className="text-xl font-bold mb-2">{movie.title}</h2>
+                        
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {movie.genres.map((genre, genreIndex) => (
+                            <span key={genreIndex} className="bg-purple-600/30 text-purple-200 px-2 py-0.5 rounded-full text-xs">
+                              {translateGenre(genre)}
+                            </span>
+                          ))}
+                        </div>
+                        
+                        <div className="text-gray-400 text-sm mb-3">
+                          <span className="mr-3">Год: {movie.year}</span>
+                          <span>ID: {movie.id}</span>
+                        </div>
+                        
+                        {movie.description && (
+                          <p className="text-gray-300 text-sm line-clamp-3 mb-2">
+                            {movie.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {similarMovies[0].genres.map((genre: string, index: number) => (
-                      <span key={index} className="bg-purple-600/30 text-purple-200 px-3 py-1 rounded-full text-sm">
-                        {genre}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center text-gray-400 mb-6">
-                    <span className="mr-4">Год: {similarMovies[0].year}</span>
-                    <span>ID: {similarMovies[0].id}</span>
-                  </div>
-                  
-                  {similarMovies[0].description && (
-                    <div className="mb-6">
-                      <h4 className="text-lg font-semibold text-white mb-2">Описание</h4>
-                      <p className="text-gray-300 leading-relaxed">
-                        {similarMovies[0].description}
-                      </p>
-                    </div>
-                  )}
-                  
-                  <p className="text-gray-400 text-sm mb-6">
-                    Этот сериал отлично соответствует вашим предпочтениям. 
-                    Насладитесь просмотром качественного кино, которое мы специально подобрали для вас.
-                  </p>
+                  ))}
                 </div>
+                
+                <p className="text-gray-400 text-sm mb-4">
+                  Эти сериалы отлично соответствуют вашим предпочтениям. 
+                  Насладитесь просмотром качественного кино, которое мы специально подобрали для вас.
+                </p>
               </>
             ) : (
               <p className="text-gray-400">К сожалению, мы не смогли найти подходящих рекомендаций. Пожалуйста, попробуйте другие варианты.</p>

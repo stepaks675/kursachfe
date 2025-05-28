@@ -8,8 +8,8 @@ import { authOptions } from '@/lib/auth/options';
 
 export type UserPreferences = {
   genres?: string[];
-  timePeriod?: string;
-  episodeDuration?: string;
+  period?: string;
+  duration?: string;
 };
 
 export async function getUserPreferences(): Promise<{ 

@@ -21,46 +21,40 @@ export default function ProfilePage() {
 
   
   const genreLabels: Record<string, string> = {
-    documentation: "Документальные",
-    comedy: "Комедии",
-    european: "Европейские",
+    action: "Боевики",
+    adventure: "Приключения",
     animation: "Анимация",
+    comedy: "Комедии",
+    crime: "Криминальные",
+    documentary: "Документальные",
+    drama: "Драмы",
     family: "Семейные",
     fantasy: "Фэнтези",
-    music: "Музыкальные",
-    drama: "Драмы",
-    action: "Боевики",
-    war: "Военные",
-    crime: "Криминальные",
-    scifi: "Научная фантастика",
-    reality: "Реалити-шоу",
-    western: "Вестерны",
-    thriller: "Триллеры",
-    romance: "Романтические",
+    history: "Исторические",
     horror: "Ужасы",
-    sport: "Спортивные",
-    history: "Исторические"
+    music: "Музыкальные",
+    mystery: "Детективы",
+    romance: "Романтические",
+    scifi: "Научная фантастика",
+    thriller: "Триллеры",
+    war: "Военные",
+    western: "Вестерны"
   }
 
   const timePeriodLabels: Record<string, string> = {
-    "1920s": "1920-е",
-    "1930s": "1930-е",
-    "1940s": "1940-е",
-    "1950s": "1950-е",
-    "1960s": "1960-е",
-    "1970s": "1970-е",
-    "1980s": "1980-е",
-    "1990s": "1990-е",
-    "2000s": "2000-е",
-    "2010s": "2010-е",
-    "2020s": "2020-е"
+    "1990-е": "1990-е",
+    "2000-е": "2000-е",
+    "2010-е": "2010-е",
+    "2020-е": "2020-е",
+    "any": "Любой период"
   }
 
   const durationLabels: Record<string, string> = {
-    "under60": "до 60 минут",
-    "60to120": "60-120 минут",
-    "120to180": "120-180 минут",
-    "180to210": "180-210 минут"
+    "до 60": "до 60",
+    "60-120": "60-120",
+    "120-180": "120-180",
+    "180-210": "180-210",
+    "any": "Любая продолжительность"
   }
   
   useEffect(() => {
@@ -106,12 +100,12 @@ export default function ProfilePage() {
     { 
       id: 2, 
       question: "Предпочитаемый год выпуска?", 
-      answer: timePeriodLabels[userPrefs.timePeriod || ""] || userPrefs.timePeriod || "Не указано" 
+      answer: timePeriodLabels[userPrefs.period || ""] || userPrefs.period || "Не указано" 
     },
     { 
       id: 3, 
       question: "Продолжительность серии?", 
-      answer: durationLabels[userPrefs.episodeDuration || ""] || userPrefs.episodeDuration || "Не указано" 
+      answer: durationLabels[userPrefs.duration || ""] || userPrefs.duration || "Не указано" 
     },
   ] : []
 
@@ -251,19 +245,24 @@ export default function ProfilePage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {paginatedRecommendations.map((item) => (
-                      <div key={item.id} className="bg-gray-700/50 rounded-lg overflow-hidden">
-                        <div className="h-40 bg-gray-600 flex items-center justify-center">
-                          <Film className="h-16 w-16 text-gray-500" />
-                        </div>
-                        <div className="p-3">
-                          <h3 className="font-medium">{item.movieTitle}</h3>
-                          <p className="text-gray-400 text-sm">
-                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('ru-RU') : 'Дата неизвестна'}
-                          </p>
+                      <div key={item.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-purple-500 transition-colors">
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-2">
+                            <Film className="h-5 w-5 text-purple-400 flex-shrink-0" />
+                            <h3 className="font-semibold text-white text-lg">{item.movieTitle}</h3>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                            <Clock className="h-4 w-4" />
+                            <span>
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString('ru-RU') : 'Дата неизвестна'}
+                            </span>
+                          </div>
+                          
                           {item.movieDescription && (
-                            <p className="text-gray-300 text-xs mt-2 line-clamp-2">
-                              {item.movieDescription}
-                            </p>
+                            <div className="text-gray-300 text-sm leading-relaxed">
+                              <p className="line-clamp-3">{item.movieDescription}</p>
+                            </div>
                           )}
                         </div>
                       </div>

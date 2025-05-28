@@ -47,15 +47,22 @@ export async function getMedianReccomendations(): Promise<{
   }
 
   try {
-    const data = await fetch(
-      process.env.API_URL + "/reccomendations/profile?id=" + session.user.id
-    );
+    const endpoint = process.env.API_URL + "/recommendations/profile?id=" + session.user.id;
+    console.log("Making request to:", endpoint);
+    console.log("Request method: GET");
+    console.log("User ID:", session.user.id);
+    
+    const data = await fetch(endpoint);
+    
+    console.log("API response status:", data.status);
+    
     if (!data.ok) {
       console.log("API request failed, returning mock data");
       return { success: true, recommendations: mockRecommendations };
     }
 
     const recommendations = await data.json();
+    console.log("API response body:", JSON.stringify(recommendations, null, 2));
     return { success: true, recommendations };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
@@ -70,31 +77,42 @@ interface QuizData {
 
 export async function getRecommendationQuiz(
   quizData: QuizData[]
-): Promise<{ success: boolean; error?: string; recommendation?: Movie }> {
+): Promise<{ success: boolean; error?: string; recommendation?: Movie[] }> {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
     return { success: false, error: "Вы не авторизованы" };
   }
   try {
-    const data = await fetch(process.env.API_URL + "/recommendations/by-quiz", {
+    const endpoint = process.env.API_URL + "/recommendations/by-quiz";
+    const requestBody = {
+      data: quizData,
+    };
+    
+    console.log("Making request to:", endpoint);
+    console.log("Request method: POST");
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
+    
+    const data = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        data: quizData,
-      }),
+      body: JSON.stringify(requestBody),
     });
+    
+    console.log("API response status:", data.status);
+    
     if (!data.ok) {
       console.log("API request failed, returning mock data");
-      return { success: true, recommendation: mockRecommendations[0] };
+      return { success: true, recommendation: mockRecommendations };
     }
     const recommendation = await data.json();
+    console.log("API response body:", JSON.stringify(recommendation, null, 2));
     return { success: true, recommendation };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
-    return { success: true, recommendation: mockRecommendations[0] };
+    return { success: true, recommendation: mockRecommendations };
   }
 }
 
@@ -106,12 +124,20 @@ export async function getAllMoviesMap(){
   }
 
   try {
-    const data = await fetch(process.env.API_URL + "/titles/map");
+    const endpoint = process.env.API_URL + "/titles/map";
+    console.log("Making request to:", endpoint);
+    console.log("Request method: GET");
+    
+    const data = await fetch(endpoint);
+    
+    console.log("API response status:", data.status);
+    
     if (!data.ok) {
       console.log("API request failed, returning mock data");
       return { success: true, map: mockMap };
     }
     const map = await data.json();
+    console.log("API response body:", JSON.stringify(map, null, 2));
     return { success: true, map };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
@@ -119,7 +145,7 @@ export async function getAllMoviesMap(){
   }  
 }
 
-export async function getSimilarMovie(movieId: number): Promise<{ success: boolean; error?: string; recommendations?: Movie }>{
+export async function getSimilarMovie(movieId: number): Promise<{ success: boolean; error?: string; recommendations?: Movie[] }>{
     const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
@@ -127,17 +153,26 @@ export async function getSimilarMovie(movieId: number): Promise<{ success: boole
   }
 
   try {
-    const data = await fetch(process.env.API_URL + "/recommendations/similar-by-id?id=" + movieId);
+    const endpoint = process.env.API_URL + "/recommendations/similar-by-id?id=" + movieId;
+    console.log("Making request to:", endpoint);
+    console.log("Request method: GET");
+    console.log("Movie ID:", movieId);
+    
+    const data = await fetch(endpoint);
+    
+    console.log("API response status:", data.status);
+    
     if (!data.ok) {
       console.log("API request failed, returning mock data");
-      return { success: true, recommendations: mockRecommendations[0] };
+      return { success: true, recommendations: mockRecommendations };
     }
     const recommendations = await data.json();
-    return { success: true, recommendations };
+    console.log("API response body:", JSON.stringify(recommendations, null, 2));
+    return { success: true, recommendations: recommendations };
   } catch (error) {
     console.error("Error fetching recommendations:", error);
-    return { success: true, recommendations: mockRecommendations[0] };
-  }
+    return { success: true, recommendations: mockRecommendations };
+  } 
 }
 
 export async function saveRecommendationToHistory(movie: Movie): Promise<{ success: boolean; error?: string }> {
