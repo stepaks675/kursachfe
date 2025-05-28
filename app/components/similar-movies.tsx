@@ -31,7 +31,7 @@ const genreMapping: Record<string, string> = {
 }
 
 const translateGenre = (genre: string): string => {
-  return genreMapping[genre.toLowerCase()] || genre
+  return genreMapping[genre?.toLowerCase()] || genre
 }
 
 export default function SimilarMovies() {
@@ -41,6 +41,7 @@ export default function SimilarMovies() {
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [allMovies, setAllMovies] = useState<any[]>([])
+  const [expandedDescription, setExpandedDescription] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchAllMovies = async () => {
@@ -81,6 +82,10 @@ export default function SimilarMovies() {
     setSelectedMovie(null)
     setShowResults(false)
     setSimilarMovies([])
+  }
+
+  const handleMovieClick = (movieIndex: number) => {
+    setExpandedDescription(expandedDescription === movieIndex ? null : movieIndex)
   }
 
   return (
@@ -150,56 +155,71 @@ export default function SimilarMovies() {
 </div>
       {similarMovies && showResults && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
-          <div className="w-full max-w-3xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <div className="w-full max-w-6xl rounded-xl bg-gray-800 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <button
               onClick={() => setShowResults(false)}
-              className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-700 transition-colors"
+              className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-700 transition-colors z-10"
             >
               <X className="h-5 w-5" />
             </button>
 
             {similarMovies.length > 0 ? (
               <>
-                <div className="mb-4">
+                <div className="mb-6">
                   <h3 className="text-xl font-semibold mb-2">Идеальные сериалы для вас</h3>
                   <p className="text-gray-400">Основываясь на ваших предпочтениях, мы рекомендуем:</p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
                   {similarMovies.map((movie, index) => (
-                    <div key={index} className="flex flex-col bg-gray-700/50 rounded-lg overflow-hidden">
-                      <div className="relative w-full">
+                    <div 
+                      key={index} 
+                      className="group cursor-pointer"
+                      onClick={() => handleMovieClick(index)}
+                    >
+                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-lg mb-3 transition-transform duration-300 group-hover:scale-105">
                         <img 
                           src={movie.image} 
                           alt={movie.title}
-                          className="w-full h-48 object-cover"
+                          className="w-full h-full object-cover"
                         />
-                        <div className="absolute top-2 right-2 bg-black/70 text-yellow-400 font-bold px-2 py-1 rounded text-sm">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        
+                        {/* Rating badge */}
+                        <div className="absolute top-2 right-2 bg-purple-600/90 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
                           ★ {movie.rating}
                         </div>
-                      </div>
-                      
-                      <div className="p-4">
-                        <h2 className="text-xl font-bold mb-2">{movie.title}</h2>
-                        
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {movie.genres.map((genre, genreIndex) => (
-                            <span key={genreIndex} className="bg-purple-600/30 text-purple-200 px-2 py-0.5 rounded-full text-xs">
-                              {translateGenre(genre)}
-                            </span>
-                          ))}
-                        </div>
-                        
-                        <div className="text-gray-400 text-sm mb-3">
-                          <span className="mr-3">Год: {movie.year}</span>
-                          <span>ID: {movie.id}</span>
-                        </div>
-                        
-                        {movie.description && (
-                          <p className="text-gray-300 text-sm line-clamp-3 mb-2">
+
+                        {/* Hover info */}
+                        <div className={`absolute bottom-0 left-0 right-0 p-3 transform transition-transform duration-300 ${
+                          expandedDescription === index ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'
+                        }`}>
+                          {/* Дополнительное затемнение для лучшей читаемости */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent -z-10"></div>
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {movie.genres.slice(0, 2).map((genre: string, genreIndex: number) => (
+                              <span key={genreIndex} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded-full text-xs font-medium text-white">
+                                {translateGenre(genre)}
+                              </span>
+                            ))}
+                          </div>
+                          <p className={`text-xs text-white font-medium leading-relaxed ${
+                            expandedDescription === index ? '' : 'line-clamp-2'
+                          }`}>
                             {movie.description}
                           </p>
-                        )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-purple-400 transition-colors">
+                          {movie.title}
+                        </h3>
+                        <div className="flex items-center space-x-2 text-xs text-gray-400">
+                          <span>{movie.year}</span>
+                          <span>•</span>
+                          <span>{translateGenre(movie.genres[0])}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
